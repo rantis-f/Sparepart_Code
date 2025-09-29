@@ -160,10 +160,6 @@ class SuperAdminController extends Controller
                 'catatan_admin' => $request->catatan ?? null,
             ]);
 
-            $pengiriman->update([
-                'status' => 'on_delivery'
-            ]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Permintaan disetujui oleh Admin (Mbak Inong). Telah dikirim ke Super Admin.'
@@ -192,23 +188,85 @@ class SuperAdminController extends Controller
             $pengiriman = $permintaan->pengiriman;
 
             if ($pengiriman) {
-                $snList = $pengiriman->details->pluck('sn')->toArray();
+                $snList = $pengiriman->details->pluck('sn')->filter()->map(function ($sn) {
+                    return trim($sn);
+                })->toArray();
 
-                // Kurangi quantity di detail_barang berdasarkan serial_number
-                \App\Models\DetailBarang::whereIn('serial_number', $snList)
-                    ->decrement('quantity', 1);
+                if (!empty($snList)) {
+                    $barangList = \App\Models\DetailBarang::whereIn('serial_number', $snList)->get();
+
+                    foreach ($pengiriman->details as $detail) {
+                        $sn = trim($detail->sn);
+                        $barang = $barangList->firstWhere('serial_number', $sn);
+
+                        if (!$barang) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "SN '$sn' tidak ditemukan di database."
+                            ], 400);
+                        }
+
+                        if ($barang->quantity <= 0) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "Stok habis untuk SN: $sn"
+                            ], 400);
+                        }
+                    }
+
+                    \App\Models\DetailBarang::whereIn('serial_number', $snList)
+                        ->decrement('quantity', 1);
+                }
+
+                // 🔽 TAMBAHAN: Kurangi stok untuk barang non-aset (tanpa SN)
+                foreach ($pengiriman->details as $detail) {
+                    $kategori = $detail->kategori;
+                    $jenis = $detail->nama;
+                    $tipe   = $detail->tipe;
+                    $jumlah   = $detail->jumlah;
+
+                    if ($kategori === 'non-aset') {
+                        // Cari stok barang di DetailBarang yang sesuai
+                        $barang = \App\Models\DetailBarang::whereHas('jenis', function ($q) use ($jenis) {
+                            $q->where('nama', $jenis);
+                        })
+                            ->whereHas('tipe', function ($q) use ($tipe) {
+                                $q->where('nama', $tipe);
+                            })
+                            ->whereHas('listBarang', function ($q) {
+                                $q->where('kategori', 'non-aset');
+                            })
+                            ->orderBy('tanggal', 'asc')
+                            ->first();
+
+                        if (!$barang) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "Tidak ditemukan barang non-aset dengan jenis ID: $jenisId dan tipe ID: $tipeId"
+                            ], 400);
+                        }
+
+                        // Ambil nama jenis barang dari relasi DetailBarang -> JenisBarang
+                        $namaJenis = optional($barang->jenisBarang)->nama;
+
+                        if ($barang->quantity < $jumlah) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "Stok tidak cukup untuk barang non-aset jenis: $namaJenis. Dibutuhkan: $jumlah, Tersedia: {$barang->quantity}"
+                            ], 400);
+                        }
+
+                        // Kurangi stok
+                        $barang->decrement('quantity', $jumlah);
+                    }
+                }
             }
-
-            // 🔥 Opsional: close semua status (jika ingin konsisten)
-            // $this->closeAllStatus($permintaan);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Permintaan disetujui final oleh Super Admin (Mas Septian). Barang siap dikirim.'
             ]);
         }
-
-        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
     }
 
     /**
@@ -255,7 +313,7 @@ class SuperAdminController extends Controller
                 ]);
 
                 $pengiriman->update([
-                    'status' => 'on_delivery',
+                    'status' => 'rejected',
                 ]);
 
                 return response()->json([
@@ -278,10 +336,12 @@ class SuperAdminController extends Controller
                     'status_admin' => 'rejected',
                     'status_gudang' => 'rejected',
                     'status_ro' => 'rejected',
-                    'status_barang' => 'rejected', // ✅ 'closed', bukan 'rejected'
                     'approved_by_super_admin' => $user->id,
                     'catatan_super_admin' => $request->catatan ?? 'Ditolak oleh Super Admin (Mas Septian)',
-                    'status' => 'ditolak',
+                ]);
+
+                $pengiriman->update([
+                    'status' => 'rejected',
                 ]);
 
                 return response()->json([

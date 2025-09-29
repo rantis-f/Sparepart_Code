@@ -17,12 +17,19 @@ class ApprovalStatusController extends Controller
             return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
         }
 
+        if ($permintaan->status_gudang === 'rejected') {
+            $status_barang = 'rejected';
+        } else {
+            $status_barang = $pengiriman->status ?? 'pending';
+        }
+
+
         return response()->json([
             'ro' => $permintaan->status_ro,
             'gudang' => $permintaan->status_gudang,
             'admin' => $permintaan->status_admin,
             'super_admin' => $permintaan->status_super_admin,
-            'status_barang' => $pengiriman->status ?? "pending", 
+            'status_barang' => $status_barang,
             'catatan' => $this->getLastCatatan($permintaan),
         ]);
     }

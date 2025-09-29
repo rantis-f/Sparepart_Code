@@ -63,7 +63,7 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <label for="jenisFilter" class="form-label">Jenis Sparepart</label>
-                    <select class="form-select" name="jenis" id="jenisFilter">
+                    <select class="form-select" name="nama" id="jenisFilter">
                         <option value="">Semua Jenis</option>
                         @foreach ($jenis as $j)
                             <option value="{{ $j->id }}"

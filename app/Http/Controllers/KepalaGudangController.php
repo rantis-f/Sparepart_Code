@@ -290,7 +290,6 @@ class KepalaGudangController extends Controller
     {
         try {
             $permintaan = Permintaan::where('tiket', $tiket)->first();
-            $pengiriman = Pengiriman::where('tiket_permintaan', $tiket)->first();
 
             // Ambil catatan dari request (opsional)
             $catatan = $request->input('catatan', 'Ditolak oleh Kepala Gudang');
@@ -306,10 +305,6 @@ class KepalaGudangController extends Controller
                 'catatan_gudang' => $catatan,
             ]);
 
-
-            $pengiriman->update([
-                'status' => 'rejected'
-            ]);
 
 
             // ✅ Kembalikan JSON sukses

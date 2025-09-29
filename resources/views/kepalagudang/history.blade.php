@@ -209,6 +209,47 @@
                             </tbody>
                         </table>
                     </div>
+                    <hr>
+
+                    <!-- 🔸 Bagian Bukti Penerimaan - Layout Kiri Kanan -->
+                    <h6 class="fw-bold text-info mb-3"><i class="bi bi-image"></i>Lampiran</h6>
+                    <div class="row">
+                        <!-- Card Bukti Pengiriman (Kiri) -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-warning text-dark">
+                                    <i class="bi bi-truck me-1"></i> Bukti Pengiriman
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="bukti-pengiriman-preview" class="d-flex justify-content-center align-items-center"
+                                        style="min-height: 200px;">
+                                        <div class="text-muted">
+                                            <i class="bi bi-image display-6"></i>
+                                            <p class="mt-2">Belum ada bukti pengiriman</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Bukti Penerimaan (Kanan) -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-info text-white">
+                                    <i class="bi bi-check-circle me-1"></i> Bukti Penerimaan
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="bukti-penerimaan-preview" class="d-flex justify-content-center align-items-center"
+                                        style="min-height: 200px;">
+                                        <div class="text-muted">
+                                            <i class="bi bi-image display-6"></i>
+                                            <p class="mt-2">Belum ada bukti penerimaan</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>

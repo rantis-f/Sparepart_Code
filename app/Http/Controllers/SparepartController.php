@@ -65,15 +65,15 @@ class SparepartController extends Controller
         $listBarang = $query->orderBy('tiket_sparepart', 'desc')->paginate(5);
 
         $totalBaru = DetailBarang::whereHas('listBarang', function ($query) {
-    $query->where('kategori', 'aset');
-})->where('status', 'sparepart baru')->sum('quantity') + DetailBarang::whereHas('listBarang', function ($query) {
-    $query->where('kategori', '!=', 'aset');
-})->where('status', 'sparepart baru')->count();
+            $query->where('kategori', 'aset');
+        })->where('status', 'sparepart baru')->sum('quantity') + DetailBarang::whereHas('listBarang', function ($query) {
+            $query->where('kategori', '!=', 'aset');
+        })->where('status', 'sparepart baru')->count();
         $totalLama = DetailBarang::whereHas('listBarang', function ($query) {
-    $query->where('kategori', 'aset');
-})->where('status', 'sparepart lama')->sum('quantity') + DetailBarang::whereHas('listBarang', function ($query) {
-    $query->where('kategori', '!=', 'aset');
-})->where('status', 'sparepart lama')->count();
+            $query->where('kategori', 'aset');
+        })->where('status', 'sparepart lama')->sum('quantity') + DetailBarang::whereHas('listBarang', function ($query) {
+            $query->where('kategori', '!=', 'aset');
+        })->where('status', 'sparepart lama')->count();
 
         $totalsPerTiket = [];
 

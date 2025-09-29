@@ -851,9 +851,9 @@
                         nama_item: namaLabel,
                         tipe: row.querySelector('.tipe-select')?.value || null,
                         merk: row.querySelector('.merk-select')?.value || null,
-                        jenis_id: row.querySelector('.jenis-id')?.value || null,
-                        tipe_id: row.querySelector('.tipe-id')?.value || null,
-                        vendor_id: row.querySelector('.vendor-id')?.value || null,
+                        jenis_id: parseInt(row.querySelector('.jenis-id')?.value) || null,
+tipe_id: parseInt(row.querySelector('.tipe-id')?.value) || null,
+vendor_id: parseInt(row.querySelector('.vendor-id')?.value) || null,
                         sn: sn || null,
                         jumlah,
                         keterangan: keterangan || null
