@@ -3,35 +3,6 @@
 @section('title', 'Request Barang - Superadmin')
 
 @section('content')
-    <!-- Page Header -->
-    <div class="page-header mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="fw-bold mb-0">
-                    <i class="bi bi-cart-check me-2"></i>
-                    @if (Auth::id() === 15)
-                        Request Menunggu Approval Admin
-                    @elseif(Auth::id() === 16)
-                        Request Menunggu Approval Superadmin
-                    @else
-                        Request Barang
-                    @endif
-                </h4>
-                <p class="text-muted mb-0">
-                    @if (Auth::id() === 15)
-                        Kelola permintaan yang sudah disetujui RO & Gudang, menunggu approval Anda.
-                    @elseif(Auth::id() === 16)
-                        Kelola permintaan yang sudah disetujui Admin, menunggu approval final Anda.
-                    @else
-                        Anda tidak memiliki akses.
-                    @endif
-                </p>
-            </div>
-            <a href="{{ route('superadmin.dashboard') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Kembali ke Dashboard
-            </a>
-        </div>
-    </div>
 
     <!-- Filter Card -->
     <div class="card mb-4">
@@ -78,21 +49,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="dashboard-card p-3 bg-white border rounded">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-success bg-opacity-10 p-3 rounded me-3">
-                            <i class="bi bi-check-circle text-success fs-4"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">Hari Ini</h6>
-                            <h4 class="mb-0 fw-bold text-success">
-                                {{ $requests->where('created_at', '>=', now()->startOfDay())->count() }}
-                            </h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
         </div>
     @endif
 
@@ -119,7 +76,7 @@
                                 </td>
                                 <td>
                                     @if (Auth::id() === 15)
-                                        <span class="badge bg-warning">Menunggu Approval Admin</span>
+                                        <span class="badge bg-secondary">Menunggu Approval Admin</span>
                                     @elseif(Auth::id() === 16)
                                         <span class="badge bg-info">Menunggu Approval Superadmin</span>
                                     @endif

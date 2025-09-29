@@ -153,7 +153,7 @@ public function validasiIndex()
         ->where('user_id', $user->id)
         ->where('status_gudang', 'approved')
         ->where('status_penerimaan', '!=', 'diterima')
-        ->orderBy('tanggal_permintaan', 'desc')
+        ->orderBy('id', 'desc')
         ->get();
 
     $data = $requests; // tambahkan ini
@@ -203,7 +203,7 @@ public function validasiIndex()
 ->whereHas('pengiriman', function (Builder $q) {
     $q->whereIn('status', ['diterima', 'close']);
 })
-->orderBy('tanggal_permintaan', 'desc');
+->orderBy('id', 'desc');
 
         // Filter berdasarkan status
         if ($request->filled('statusFilter')) {

@@ -4,22 +4,7 @@
 
 @section('content')
     <!-- Page Header -->
-    <div class="page-header mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>Histori Barang</h4>
-                <p class="text-muted mb-0">Riwayat transaksi dan pergerakan barang</p>
-            </div>
-            <div>
-                <span class="badge bg-light text-dark me-2">
-                    <i class="bi bi-calendar me-1"></i> {{ date('d F Y') }}
-                </span>
-                <a href="{{ route('superadmin.dashboard') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Dashboard
-                </a>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Filter Section -->
     <div class="filter-card mb-4">
@@ -37,7 +22,7 @@
                 <label for="statusFilter" class="form-label">Status</label>
                 <select class="form-select" id="statusFilter" name="statusFilter">
                     <option value="">Semua Status</option>
-                    <option value="diterima" {{ request('statusFilter') == 'diterima' ? 'selected' : '' }}>Diterima</option>
+                    <option value="disetujui" {{ request('statusFilter') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
                     <option value="ditolak" {{ request('statusFilter') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                     <option value="diproses" {{ request('statusFilter') == 'diproses' ? 'selected' : '' }}>Diproses</option>
                     <option value="dikirim" {{ request('statusFilter') == 'dikirim' ? 'selected' : '' }}>Dikirim</option>
@@ -84,10 +69,10 @@
     @php
         $status = '';
         if ($req->status_super_admin === 'approved') {
-            $status = 'Diterima';
+            $status = 'Disetujui';
         } elseif ($req->status_super_admin === 'rejected') {
             $status = 'Ditolak';
-        } elseif ($req->status_super_admin === 'on progres') {
+        } elseif ($req->status_admin === 'on progres') {
             $status = 'On Progress';
         } elseif ($req->status_super_admin === 'pending' && $req->status_admin === 'approved') {
             $status = 'On Progress';
@@ -101,7 +86,7 @@
             $bg = 'bg-success';
         } elseif ($req->status_super_admin === 'rejected') {
             $bg = 'bg-danger';
-        } elseif ($req->status_super_admin === 'on progres' || ($req->status_super_admin === 'pending' && $req->status_admin === 'approved')) {
+        } elseif ($req->status_admin === 'on progres' || ($req->status_super_admin === 'pending' && $req->status_admin === 'approved')) {
             $bg = 'bg-warning text-dark';
         } else {
             $bg = 'bg-secondary';

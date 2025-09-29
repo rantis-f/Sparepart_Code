@@ -8,22 +8,6 @@
 @section('content')
     <input type="hidden" name="_token" id="csrf_token" value="{{ csrf_token() }}">
 
-    <div class="page-header mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="fw-bold mb-0"><i class="bi bi-tools me-2"></i>Daftar Sparepart</h4>
-                <p class="text-muted mb-0">Kelola inventaris sparepart dan stok barang</p>
-            </div>
-            <div>
-                <span class="badge bg-light text-dark me-2">
-                    <i class="bi bi-calendar me-1"></i> {{ date('d F Y') }}
-                </span>
-                <a href="{{ route('superadmin.dashboard') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Dashboard
-                </a>
-            </div>
-        </div>
-    </div>
 
 
     <!-- Filter Card -->

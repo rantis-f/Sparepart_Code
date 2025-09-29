@@ -15,7 +15,7 @@ class KepalaROController extends Controller
 
         $requests = Permintaan::with(['user', 'details'])
             ->where('status', 'pending')
-            ->where('status_ro', 'on progres') // ✅ Hanya tampilkan yang belum diproses
+            ->where('status_ro', 'on progres')
             ->whereHas('user', function ($q) use ($user) {
                 $q->where('region', $user->region);
             })
@@ -32,7 +32,8 @@ class KepalaROController extends Controller
         $query = Permintaan::with(['user', 'details'])
             ->whereHas('user', function ($q) use ($user) {
                 $q->where('region', $user->region);
-            });
+            })
+            ->orderBy('id', 'desc');
 
         // Filter 
         if ($request->filled('status') && $request->status !== 'all') {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pengiriman;
 use Illuminate\Http\Request;
 use App\Models\Permintaan;
 
@@ -10,6 +11,7 @@ class ApprovalStatusController extends Controller
     public function getStatus($tiket)
     {
         $permintaan = Permintaan::where('tiket', $tiket)->first();
+        $pengiriman = Pengiriman::where('tiket_permintaan', $tiket)->first();
 
         if (!$permintaan) {
             return response()->json(['message' => 'Tiket tidak ditemukan'], 404);
@@ -20,7 +22,7 @@ class ApprovalStatusController extends Controller
             'gudang' => $permintaan->status_gudang,
             'admin' => $permintaan->status_admin,
             'super_admin' => $permintaan->status_super_admin,
-            'status_barang' => $permintaan->status_barang, //
+            'status_barang' => $pengiriman->status ?? "pending", 
             'catatan' => $this->getLastCatatan($permintaan),
         ]);
     }

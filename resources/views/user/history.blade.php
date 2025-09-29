@@ -76,7 +76,6 @@
                                             onclick="showStatusDetailModal('{{ $req->tiket }}', 'user')"
                                             class="text-blue-600 hover:text-blue-800 focus:outline-none"
                                             title="Lihat detail progres approval">
-                                            <i class="fas fa-eye text-sm"></i>
                                         </button>
                                     </div>
                                 </td>

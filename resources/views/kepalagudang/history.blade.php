@@ -43,7 +43,7 @@
                 <select class="form-select" id="statusFilter">
                     <option value="">Semua Status</option>
                     <option value="dikirim">Dikirim</option>
-                    <option value="diterima">Diterima</option>
+                    <option value="disetujui">Disetujui</option>
                     <option value="diproses">Diproses</option>
                     <option value="ditolak">Ditolak</option>
                 </select>
@@ -87,7 +87,7 @@
     @php
         $status = '';
         if ($req->status_gudang === 'approved') {
-            $status = 'Diterima';
+            $status = 'Disetujui';
         } elseif ($req->status_gudang === 'rejected') {
             $status = 'Ditolak';
         } elseif ($req->status_gudang === 'on progres') {

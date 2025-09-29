@@ -77,19 +77,18 @@ class SuperAdminController extends Controller
                 ->where('status_gudang', 'approved')
                 ->where('status_admin', '!=', 'approved')   // ✅ Bukan approved
                 ->where('status_admin', '!=', 'rejected')   // ✅ Bukan rejected
-                ->orderBy('tanggal_permintaan', 'desc')
+                ->orderBy('id', 'desc')
                 ->paginate(10);
             $pengiriman = Pengiriman::with('details')
                 ->where('tiket_permintaan', $tiket)
                 ->first();
-
         } elseif ($user->id === 16) {
             // Super Admin (Mas Septian): tampilkan jika Admin sudah approve
             $requests = Permintaan::with(['user', 'details', 'pengiriman.details'])
                 ->where('status_admin', 'approved')
                 ->where('status_super_admin', '!=', 'approved')   // ✅ Belum disetujui
                 ->where('status_super_admin', '!=', 'rejected')   // ✅ Belum ditolak
-                ->orderBy('tanggal_permintaan', 'desc')
+                ->orderBy('id', 'desc')
                 ->paginate(10);
             $pengiriman = Pengiriman::with('details')
                 ->where('tiket_permintaan', $tiket)
@@ -119,7 +118,7 @@ class SuperAdminController extends Controller
                 }
             })
             ->orWhereHas('pengiriman') // atau sudah dikirim
-            ->orderByDesc('tanggal_permintaan');
+            ->orderBy('id', 'desc');
 
         // Filter tanggal
         if ($request->filled('dateFrom')) {
@@ -144,6 +143,7 @@ class SuperAdminController extends Controller
         // 🔹 ADMIN (Mbak Inong) - ID 15
         if ($user->id === 15) {
             $permintaan = Permintaan::where('tiket', $tiket)->firstOrFail();
+            $pengiriman = Pengiriman::where('tiket_permintaan', $tiket)->first();
 
             if ($permintaan->status_ro !== 'approved' || $permintaan->status_gudang !== 'approved') {
                 return response()->json([
@@ -158,6 +158,10 @@ class SuperAdminController extends Controller
                 'status_super_admin' => 'on progres',
                 'approved_by_admin' => $user->id,
                 'catatan_admin' => $request->catatan ?? null,
+            ]);
+
+            $pengiriman->update([
+                'status' => 'on_delivery'
             ]);
 
             return response()->json([
@@ -184,6 +188,16 @@ class SuperAdminController extends Controller
                 'catatan_super_admin' => $request->catatan ?? null,
                 'status_barang' => 'on_delivery',
             ]);
+
+            $pengiriman = $permintaan->pengiriman;
+
+            if ($pengiriman) {
+                $snList = $pengiriman->details->pluck('sn')->toArray();
+
+                // Kurangi quantity di detail_barang berdasarkan serial_number
+                \App\Models\DetailBarang::whereIn('serial_number', $snList)
+                    ->decrement('quantity', 1);
+            }
 
             // 🔥 Opsional: close semua status (jika ingin konsisten)
             // $this->closeAllStatus($permintaan);
@@ -213,74 +227,78 @@ class SuperAdminController extends Controller
     /**
      * Tolak permintaan → broadcast rejected ke semua level
      */
-   public function reject(Request $request, $tiket) // ✅ Ambil $tiket dari URL
-{
-    try {
-        $user = Auth::user();
-        $permintaan = Permintaan::where('tiket', $tiket)->firstOrFail();
+    public function reject(Request $request, $tiket) // ✅ Ambil $tiket dari URL
+    {
+        try {
+            $user = Auth::user();
+            $permintaan = Permintaan::where('tiket', $tiket)->firstOrFail();
+            $pengiriman = Pengiriman::where('tiket_permintaan', $tiket)->first();
 
-        // 🔹 ADMIN (Mbak Inong) - ID 15
-        if ($user->id === 15) {
-            if ($permintaan->status_ro !== 'approved' || $permintaan->status_gudang !== 'approved') {
+            // 🔹 ADMIN (Mbak Inong) - ID 15
+            if ($user->id === 15) {
+                if ($permintaan->status_ro !== 'approved' || $permintaan->status_gudang !== 'approved') {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Permintaan belum disetujui oleh RO/Gudang.'
+                    ], 400);
+                }
+
+                $permintaan->update([
+                    'status_admin' => 'rejected',
+                    'status_super_admin' => 'rejected',
+                    'status_gudang' => 'rejected',
+                    'status_ro' => 'rejected',
+                    'status_barang' => 'rejected', // ✅ 'closed', bukan 'rejected'
+                    'approved_by_admin' => $user->id,
+                    'catatan_admin' => $request->catatan ?? 'Ditolak oleh Admin (Mbak Inong)',
+                    'status' => 'ditolak',
+                ]);
+
+                $pengiriman->update([
+                    'status' => 'on_delivery',
+                ]);
+
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Permintaan belum disetujui oleh RO/Gudang.'
-                ], 400);
+                    'success' => true,
+                    'message' => 'Permintaan ditolak oleh Admin.'
+                ]);
             }
 
-            $permintaan->update([
-                'status_admin' => 'rejected',
-                'status_super_admin' => 'rejected',
-                'status_gudang' => 'rejected',
-                'status_ro' => 'rejected',
-                'status_barang' => 'rejected', // ✅ 'closed', bukan 'rejected'
-                'approved_by_admin' => $user->id,
-                'catatan_admin' => $request->catatan ?? 'Ditolak oleh Admin (Mbak Inong)',
-                'status' => 'ditolak',
-            ]);
+            // 🔹 SUPER ADMIN (Mas Septian) - ID 16
+            if ($user->id === 16) {
+                if ($permintaan->status_admin !== 'approved') {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Permintaan belum disetujui oleh Admin.'
+                    ], 400);
+                }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Permintaan ditolak oleh Admin.'
-            ]);
-        }
+                $permintaan->update([
+                    'status_super_admin' => 'rejected',
+                    'status_admin' => 'rejected',
+                    'status_gudang' => 'rejected',
+                    'status_ro' => 'rejected',
+                    'status_barang' => 'rejected', // ✅ 'closed', bukan 'rejected'
+                    'approved_by_super_admin' => $user->id,
+                    'catatan_super_admin' => $request->catatan ?? 'Ditolak oleh Super Admin (Mas Septian)',
+                    'status' => 'ditolak',
+                ]);
 
-        // 🔹 SUPER ADMIN (Mas Septian) - ID 16
-        if ($user->id === 16) {
-            if ($permintaan->status_admin !== 'approved') {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Permintaan belum disetujui oleh Admin.'
-                ], 400);
+                    'success' => true,
+                    'message' => 'Permintaan ditolak oleh Super Admin.'
+                ]);
             }
 
-            $permintaan->update([
-                'status_super_admin' => 'rejected',
-                'status_admin' => 'rejected',
-                'status_gudang' => 'rejected',
-                'status_ro' => 'rejected',
-                'status_barang' => 'rejected', // ✅ 'closed', bukan 'rejected'
-                'approved_by_super_admin' => $user->id,
-                'catatan_super_admin' => $request->catatan ?? 'Ditolak oleh Super Admin (Mas Septian)',
-                'status' => 'ditolak',
-            ]);
-
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        } catch (\Exception $e) {
+            \Log::error('Reject Error: ' . $e->getMessage());
             return response()->json([
-                'success' => true,
-                'message' => 'Permintaan ditolak oleh Super Admin.'
-            ]);
+                'success' => false,
+                'message' => 'Gagal menolak permintaan. Silakan coba lagi.'
+            ], 500);
         }
-
-        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-
-    } catch (\Exception $e) {
-        \Log::error('Reject Error: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Gagal menolak permintaan. Silakan coba lagi.'
-        ], 500);
     }
-}
     public function historyDetailApi($tiket)
     {
         try {
@@ -304,5 +322,4 @@ class SuperAdminController extends Controller
             return response()->json(['error' => 'Data tidak ditemukan'], 404);
         }
     }
-
 }

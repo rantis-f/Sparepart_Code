@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\DetailBarang;
-use App\Models\ListBarang;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
@@ -84,7 +83,7 @@ class KepalaGudangController extends Controller
         $requests = Permintaan::where('status_ro', 'approved')
             ->whereIn('status_gudang', ['pending', 'on progres'])
             ->with(['user', 'details']) // Load relasi jika diperlukan
-            ->orderBy('tanggal_permintaan', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
 
         return view('kepalagudang.request', compact('requests'));
@@ -97,8 +96,8 @@ class KepalaGudangController extends Controller
 
     public function kirim($id)
     {
-        $permintaan = Permintaan::findOrFail($id);
-        $permintaan->status_barang = 'on_delivery';
+        $permintaan = Pengiriman::findOrFail($id);
+        $permintaan->status = 'on_delivery';
         $permintaan->save();
 
         return redirect()->back()->with('success', 'Barang berhasil dikirim.');
@@ -110,7 +109,7 @@ class KepalaGudangController extends Controller
     {
         $requests = Permintaan::with(['user', 'details'])
             ->where('status_gudang', '!=', 'pending') // ✅ Hanya yang sudah di-approve/ditolak
-            ->orderBy('tanggal_permintaan', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
 
         return view('kepalagudang.history', compact('requests'));
@@ -290,7 +289,8 @@ class KepalaGudangController extends Controller
     public function rejectGudang(Request $request, $tiket)
     {
         try {
-            $permintaan = Permintaan::where('tiket', $tiket)->firstOrFail();
+            $permintaan = Permintaan::where('tiket', $tiket)->first();
+            $pengiriman = Pengiriman::where('tiket_permintaan', $tiket)->first();
 
             // Ambil catatan dari request (opsional)
             $catatan = $request->input('catatan', 'Ditolak oleh Kepala Gudang');
@@ -301,10 +301,16 @@ class KepalaGudangController extends Controller
                 'status_ro' => 'rejected',
                 'status_admin' => 'rejected',
                 'status_super_admin' => 'rejected',
-                'status_barang' => 'rejected', // ✅ 'closed', bukan 'rejected' (sesuai enum)
+                'status_barang' => 'rejected',
                 'status' => 'ditolak',
                 'catatan_gudang' => $catatan,
             ]);
+
+
+            $pengiriman->update([
+                'status' => 'rejected'
+            ]);
+
 
             // ✅ Kembalikan JSON sukses
             return response()->json([
@@ -350,7 +356,7 @@ class KepalaGudangController extends Controller
 
         // Validation
         $rules = [
-            'tiket' => ['required', 'string', Rule::exists('permintaan', 'tiket')],
+            'tiket' => 'required|string|exists:permintaan,tiket',
             'tanggal_pengiriman' => ['required', 'date'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.kategori' => ['required', 'string'],
@@ -371,6 +377,40 @@ class KepalaGudangController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+
+        $serialNumbers = collect($request->items)->pluck('sn')->filter();
+
+        if ($serialNumbers->isNotEmpty()) {
+            $barangList = DetailBarang::whereIn('serial_number', $serialNumbers)
+                ->get(['serial_number', 'quantity']);
+
+            $invalidSn = [];
+
+            foreach ($request->items as $item) {
+                $sn = $item['sn'] ?? null;
+                if (!$sn) continue;
+
+                $barang = $barangList->firstWhere('serial_number', $sn);
+                if (!$barang) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "SN '$sn' tidak ditemukan di database."
+                    ], 422);
+                }
+
+                if ($barang->quantity <= 0) {
+                    $invalidSn[] = $sn;
+                }
+            }
+
+            if (!empty($invalidSn)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat mengirim: SN berikut stoknya habis: ' . implode(', ', $invalidSn)
+                ], 422);
+            }
+        }
+
 
         DB::beginTransaction();
         try {
@@ -394,7 +434,6 @@ class KepalaGudangController extends Controller
                 'user_id' => $user->id,
                 'tiket_permintaan' => $tiket,
                 'tanggal_transaksi' => $request->input('tanggal_pengiriman'),
-                'status' => 'on_delivery',
                 'ekspedisi' => $request->input('ekspedisi', 'tidak'),
                 'tanggal_perubahan' => now(),
             ]);
@@ -569,14 +608,11 @@ class KepalaGudangController extends Controller
     public function closedFormIndex()
     {
         // Ambil permintaan yang sudah "diterima" / closed — sesuaikan kondisi where() jika Anda pakai status lain
-        $permintaans = Permintaan::with(['user']) // pastikan relasi user ada
-            ->where(function ($q) {
-                // Sesuaikan kondisi berikut dengan skema status Anda:
-                // contoh menampilkan yang status = 'diterima' atau status_barang = 'diterima'
-                $q->where('status', 'diterima')
-                    ->orWhere('status_barang', 'diterima');
+        $permintaans = Permintaan::with(['user', 'pengiriman']) // pastikan relasi user ada
+            ->whereHas('pengiriman', function ($q) {
+                $q->where('status', 'diterima');
             })
-            ->orderByDesc('tanggal_penerimaan')
+            ->orderBy('id', 'desc')
             ->get();
 
         // Ambil pengiriman terkait (by tiket) — lakukan sekali memakai pengumpulan tiket untuk efisiensi
@@ -623,56 +659,56 @@ class KepalaGudangController extends Controller
         return view('kepalagudang.closed-form', ['permintaans' => $result]);
     }
 
-public function verifyClosedForm(Request $request, $tiket)
-{
-    $permintaan = Permintaan::where('tiket', $tiket)->first();
-    if (! $permintaan) {
-        Log::warning('verifyClosedForm: tiket permintaan tidak ditemukan', ['tiket' => $tiket]);
-        if ($request->wantsJson()) {
-            return response()->json(['success' => false, 'message' => 'Tiket tidak ditemukan'], 404);
+    public function verifyClosedForm(Request $request, $tiket)
+    {
+        $permintaan = Permintaan::where('tiket', $tiket)->first();
+        if (! $permintaan) {
+            Log::warning('verifyClosedForm: tiket permintaan tidak ditemukan', ['tiket' => $tiket]);
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Tiket tidak ditemukan'], 404);
+            }
+            return redirect()->back()->with('error', 'Tiket tidak ditemukan');
         }
-        return redirect()->back()->with('error', 'Tiket tidak ditemukan');
+
+        $pengiriman = Pengiriman::where('tiket_permintaan', $tiket)->first();
+        if (! $pengiriman) {
+            Log::warning('verifyClosedForm: pengiriman tidak ditemukan untuk tiket', ['tiket' => $tiket]);
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Data pengiriman tidak ditemukan'], 404);
+            }
+            return redirect()->back()->with('error', 'Data pengiriman tidak ditemukan');
+        }
+
+        // Jika sudah closed, kembalikan pesan informatif
+        if ($pengiriman->status === 'closed') {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Pengiriman sudah berstatus closed', 'pengiriman' => $pengiriman]);
+            }
+            return redirect()->back()->with('info', 'Pengiriman sudah berstatus closed');
+        }
+
+        DB::beginTransaction();
+        try {
+            $pengiriman->status = 'close';
+            $pengiriman->tanggal_perubahan = now(); // catat waktu perubahan, opsional
+            $pengiriman->save();
+
+            DB::commit();
+
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Berhasil diverifikasi!', 'pengiriman' => $pengiriman]);
+            }
+            return redirect()->back()->with('success', 'Berhasil diverifikasi!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('verifyClosedForm: gagal update status', ['tiket' => $tiket, 'message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Gagal menyimpan konfirmasi.'], 500);
+            }
+            return redirect()->back()->with('error', 'Gagal menyimpan konfirmasi.');
+        }
     }
-
-    $pengiriman = Pengiriman::where('tiket_permintaan', $tiket)->first();
-    if (! $pengiriman) {
-        Log::warning('verifyClosedForm: pengiriman tidak ditemukan untuk tiket', ['tiket' => $tiket]);
-        if ($request->wantsJson()) {
-            return response()->json(['success' => false, 'message' => 'Data pengiriman tidak ditemukan'], 404);
-        }
-        return redirect()->back()->with('error', 'Data pengiriman tidak ditemukan');
-    }
-
-    // Jika sudah closed, kembalikan pesan informatif
-    if ($pengiriman->status === 'closed') {
-        if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Pengiriman sudah berstatus closed', 'pengiriman' => $pengiriman]);
-        }
-        return redirect()->back()->with('info', 'Pengiriman sudah berstatus closed');
-    }
-
-    DB::beginTransaction();
-    try {
-        $pengiriman->status = 'close';
-        $pengiriman->tanggal_perubahan = now(); // catat waktu perubahan, opsional
-        $pengiriman->save();
-
-        DB::commit();
-
-        if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Berhasil diverifikasi!', 'pengiriman' => $pengiriman]);
-        }
-        return redirect()->back()->with('success', 'Berhasil diverifikasi!');
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('verifyClosedForm: gagal update status', ['tiket' => $tiket, 'message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-
-        if ($request->wantsJson()) {
-            return response()->json(['success' => false, 'message' => 'Gagal menyimpan konfirmasi.'], 500);
-        }
-        return redirect()->back()->with('error', 'Gagal menyimpan konfirmasi.');
-    }
-}
     public function getValidasiDetail($tiket)
     {
         // ambil permintaan dengan relasi user & details

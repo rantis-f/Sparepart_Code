@@ -73,7 +73,6 @@
                             <th>ID Request</th>
                             <th>Requester</th>
                             <th>Tanggal Request</th>
-                            <th>Status</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -84,7 +83,6 @@
                                 <td>{{ $req->user->name ?? 'User' }}</td>
                                 <td>{{ \Illuminate\Support\Carbon::parse($req->tanggal_permintaan)->translatedFormat('d M Y') }}
                                 </td>
-                                <td><span class="badge bg-success">Disetujui</span></td>
                                 <td class="action-buttons">
                                     <button class="btn btn-success btn-sm btn-terima" data-tiket="{{ $req->tiket }}"
                                         data-requester="{{ $req->user->name ?? 'User' }}"
@@ -177,10 +175,10 @@
                                     <tr>
                                         <th class="no-col">No</th>
                                         <th class="kategori-col">Kategori</th>
+                                        <th class="sn-col">Nomor Serial</th>
                                         <th class="nama-col">Nama</th>
                                         <th class="tipe-col">Tipe</th>
                                         <th class="merk-col">Merk</th>
-                                        <th class="sn-col">Nomor Serial</th>
                                         <th class="jumlah-col">Jumlah</th>
                                         <th class="keterangan-col">Keterangan</th>
                                         <th class="aksi-col">Aksi</th>
@@ -196,6 +194,8 @@
                                                 <option value="non-aset">Non-Aset</option>
                                             </select>
                                         </td>
+                                        <td class="sn-col"><input type="text" class="form-control sn-input"
+                                                placeholder="Nomor Serial" disabled></td>
                                         <td class="nama-col">
                                             <select class="form-control nama-item-select" name="nama_item">
                                                 <option value="">Pilih Nama</option>
@@ -211,8 +211,7 @@
                                                 <option value="">Pilih Merk</option>
                                             </select>
                                         </td>
-                                        <td class="sn-col"><input type="text" class="form-control sn-input"
-                                                placeholder="Nomor Serial" disabled></td>
+                                        
                                         <td class="jumlah-col"><input type="number" class="form-control" value="1"
                                                 min="1" required></td>
                                         <td class="keterangan-col">
@@ -458,6 +457,7 @@
           <option value="non-aset">Non-Aset</option>
         </select>
       </td>
+      <td class="sn-col"><input type="text" class="form-control sn-input" name="items[${idx}][sn]" placeholder="Nomor Serial" disabled></td>
       <td class="nama-col">
         <select class="form-control nama-item-select" name="items[${idx}][nama_item]">
           <option value="">Pilih Nama</option>
@@ -476,7 +476,6 @@
         </select>
         <input type="hidden" class="vendor-id" name="items[${idx}][vendor_id]" value="">
       </td>
-      <td class="sn-col"><input type="text" class="form-control sn-input" name="items[${idx}][sn]" placeholder="Nomor Serial" disabled></td>
       <td class="jumlah-col"><input type="number" class="form-control" name="items[${idx}][jumlah]" value="${item.jumlah || 1}" min="1" required></td>
       <td class="keterangan-col">
         <input type="text" class="form-control" name="items[${idx}][keterangan]" value="${item.keterangan || ''}" placeholder="Keterangan">

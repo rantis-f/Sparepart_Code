@@ -500,7 +500,7 @@
         }
 
         .card-icon.bg-warning {
-            background-color: rgba(247, 37, 133, 0.1) !important;
+            background-color: rgba(247, 223, 37, 0.1) !important;
         }
 
         .bg-primary {
@@ -511,13 +511,9 @@
             background-color: var(--danger) !important;
         }
 
-        .bg-success {
-            background-color: var(--success) !important;
-        }
+       
 
-        .bg-warning {
-            background-color: var(--warning) !important;
-        }
+        
 
         .text-primary {
             color: var(--primary) !important;
@@ -565,11 +561,11 @@
             </a>
             <a href="{{ route('kepalagudang.history.index') }}"
                 class="list-group-item list-group-item-action py-3 {{ request()->routeIs('kepalagudang.history.*') ? 'active' : '' }}">
-                <i class="bi bi-clock-history"></i> <span>Histori Transaksi</span>
+                <i class="bi bi-clock-history"></i> <span>Tracking/History</span>
             </a>
             <a href="{{ route('kepalagudang.closed.form.index') }}"
                 class="list-group-item list-group-item-action py-3 {{ request()->routeIs('kepalagudang.closed.form.index.*') ? 'active' : '' }}">
-                <i class="bi bi-clock-history"></i> <span>Closed Form</span>
+                <i class="bi bi-x-circle"></i> <span>Closed Form</span>
             </a>
         </div>
 

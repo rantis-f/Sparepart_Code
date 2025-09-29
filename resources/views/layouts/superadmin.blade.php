@@ -434,9 +434,7 @@
             background-color: rgba(76, 201, 240, 0.1) !important;
         }
 
-        .card-icon.bg-warning {
-            background-color: rgba(247, 37, 133, 0.1) !important;
-        }
+        
 
         .bg-primary {
             background-color: var(--primary) !important;
@@ -446,13 +444,9 @@
             background-color: var(--danger) !important;
         }
 
-        .bg-success {
-            background-color: var(--success) !important;
-        }
+        
 
-        .bg-warning {
-            background-color: var(--warning) !important;
-        }
+       
 
         .text-primary {
             color: var(--primary) !important;
@@ -523,6 +517,22 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fungsi untuk menandai menu aktif berdasarkan URL
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentUrl = window.location.href;
+            const menuItems = document.querySelectorAll('.sidebar .list-group-item');
+
+            menuItems.forEach(item => {
+                const itemUrl = item.getAttribute('href');
+
+                // Jika URL saat ini mengandung URL menu item, tandai sebagai aktif
+                if (currentUrl.includes(itemUrl) && itemUrl !== '#') {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
     @stack('scripts')
 </body>
 

@@ -34,13 +34,13 @@
                 <div class="card-icon bg-success bg-opacity-10 text-success">
                     <i class="bi bi-hourglass-split"></i>
                 </div>
-                @if(Auth::id() === 15)
-                <h4 class="stats-number">{{ $totalAdminPending ?? 0 }}</h4>
-                    @elseif(Auth::id() === 16)
-                <h4 class="stats-number">{{ $totalSuperadminPending ?? 0 }}</h4>
-                    @else
-                        <h4 class="stats-number">0</h4>
-                    @endif
+                @if (Auth::id() === 15)
+                    <h4 class="stats-number">{{ $totalAdminPending ?? 0 }}</h4>
+                @elseif(Auth::id() === 16)
+                    <h4 class="stats-number">{{ $totalSuperadminPending ?? 0 }}</h4>
+                @else
+                    <h4 class="stats-number">0</h4>
+                @endif
                 <p class="stats-title">Pending</p>
             </div>
         </div>
@@ -90,7 +90,8 @@
                     </table>
                 </div>
                 <div class="d-flex justify-content-end mt-3">
-                    <a href="{{ route('kepalagudang.sparepart.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua
+                    <a href="{{ route('kepalagudang.sparepart.index') }}" class="btn btn-sm btn-outline-primary">Lihat
+                        Semua
                         <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
@@ -111,22 +112,10 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="badge bg-danger">HIST003</span></td>
-                                <td>SFP</td>
-                                <td>8</td>
-                                <td>2025-09-19</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-danger">HIST002</span></td>
-                                <td>DUMMY</td>
-                                <td>7</td>
-                                <td>2025-09-19</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-danger">HIST001</span></td>
-                                <td>DUMMY</td>
-                                <td>5</td>
-                                <td>2025-09-19</td>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                                    Tidak ada data keluar
+                                </td>
                             </tr>
                         </tbody>
                     </table>
