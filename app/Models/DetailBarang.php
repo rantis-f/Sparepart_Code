@@ -21,6 +21,7 @@ class DetailBarang extends Model
         'quantity',
         'keterangan',
         'kode_region',
+        'kategori',
         'status',
         'tanggal',
         'pic',

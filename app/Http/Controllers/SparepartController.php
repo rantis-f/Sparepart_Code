@@ -64,13 +64,16 @@ class SparepartController extends Controller
 
         $listBarang = $query->orderBy('tiket_sparepart', 'desc')->paginate(5);
 
-        $totalPerStatus = DB::table('detail_barang as d')
-            ->select('d.status', DB::raw('SUM(d.quantity) as total_quantity'))
-            ->groupBy('d.status')
-            ->pluck('total_quantity', 'status');
-
-        $totalBaru = $totalPerStatus->get('sparepart baru', 0);
-        $totalLama  = $totalPerStatus->get('sparepart lama', 0);
+        $totalBaru = DetailBarang::whereHas('listBarang', function ($query) {
+    $query->where('kategori', 'aset');
+})->where('status', 'sparepart baru')->sum('quantity') + DetailBarang::whereHas('listBarang', function ($query) {
+    $query->where('kategori', '!=', 'aset');
+})->where('status', 'sparepart baru')->count();
+        $totalLama = DetailBarang::whereHas('listBarang', function ($query) {
+    $query->where('kategori', 'aset');
+})->where('status', 'sparepart lama')->sum('quantity') + DetailBarang::whereHas('listBarang', function ($query) {
+    $query->where('kategori', '!=', 'aset');
+})->where('status', 'sparepart lama')->count();
 
         $totalsPerTiket = [];
 
@@ -92,7 +95,15 @@ class SparepartController extends Controller
         $tipe = TipeBarang::all();
         $vendor = Vendor::all();
         $detail = DetailBarang::all();
-        $totalQty = DetailBarang::sum('quantity');
+        $totalQty = DetailBarang::whereHas('listBarang', function ($query) {
+            $query->where('kategori', 'aset');
+        })->sum('quantity')
+            +
+            DetailBarang::whereHas('listBarang', function ($query) {
+                $query->where('kategori', '!=', 'aset');
+            })->count();
+
+
 
         return view('kepalagudang.sparepart', [
             'listBarang'    => $listBarang,
@@ -311,54 +322,54 @@ class SparepartController extends Controller
     }
 
 
-public function showDetail(Request $request, $tiket_sparepart)
-{
-    $list = ListBarang::with(['jenisBarang', 'tipeBarang'])
-        ->where('tiket_sparepart', $tiket_sparepart)
-        ->firstOrFail();
+    public function showDetail(Request $request, $tiket_sparepart)
+    {
+        $list = ListBarang::with(['jenisBarang', 'tipeBarang'])
+            ->where('tiket_sparepart', $tiket_sparepart)
+            ->firstOrFail();
 
-    // Ambil detail berdasarkan filter
-    $detailsQuery = $list->details()->newQuery();
+        // Ambil detail berdasarkan filter
+        $detailsQuery = $list->details()->newQuery();
 
-    if ($request->filled('status')) {
-        $detailsQuery->where('status', $request->status);
+        if ($request->filled('status')) {
+            $detailsQuery->where('status', $request->status);
+        }
+
+        if ($request->filled('tanggal_mulai') && $request->filled('tanggal_berakhir')) {
+            $detailsQuery->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_berakhir]);
+        }
+
+        // Tambahan filter lain jika diperlukan (misalnya vendor_id, department, dsb.)
+        if ($request->filled('vendor_id')) {
+            $detailsQuery->where('vendor_id', $request->vendor_id);
+        }
+
+        $filteredDetails = $detailsQuery->with('vendor')->get();
+
+        return response()->json([
+            'success' => true,
+            'id'      => $list->tiket_sparepart,
+            'tanggal' => \Carbon\Carbon::parse($list->tanggal)->format('d F Y'),
+            'type'    => $list->tipeBarang->nama ?? '-',
+            'jenis'   => $list->jenisBarang->nama ?? '-',
+            'items'   => $filteredDetails->map(function ($d) {
+                return [
+                    'id'         => $d->id,
+                    'serial'     => $d->serial_number,
+                    'status'     => $d->status,
+                    'harga'      => $d->harga,
+                    'vendor'     => $d->vendor->nama ?? '-',
+                    'vendor_id'  => $d->vendor_id ?? '-',
+                    'quantity'   => $d->quantity,
+                    'spk'        => $d->spk,
+                    'pic'        => $d->pic,
+                    'department' => $d->department,
+                    'keterangan' => $d->keterangan,
+                    'tanggal'    => \Carbon\Carbon::parse($d->tanggal)->format('Y-m-d')
+                ];
+            }),
+        ]);
     }
-
-    if ($request->filled('tanggal_mulai') && $request->filled('tanggal_berakhir')) {
-        $detailsQuery->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_berakhir]);
-    }
-
-    // Tambahan filter lain jika diperlukan (misalnya vendor_id, department, dsb.)
-    if ($request->filled('vendor_id')) {
-        $detailsQuery->where('vendor_id', $request->vendor_id);
-    }
-
-    $filteredDetails = $detailsQuery->with('vendor')->get();
-
-    return response()->json([
-        'success' => true,
-        'id'      => $list->tiket_sparepart,
-        'tanggal' => \Carbon\Carbon::parse($list->tanggal)->format('d F Y'),
-        'type'    => $list->tipeBarang->nama ?? '-',
-        'jenis'   => $list->jenisBarang->nama ?? '-',
-        'items'   => $filteredDetails->map(function ($d) {
-            return [
-                'id'         => $d->id,
-                'serial'     => $d->serial_number,
-                'status'     => $d->status,
-                'harga'      => $d->harga,
-                'vendor'     => $d->vendor->nama ?? '-',
-                'vendor_id'  => $d->vendor_id ?? '-',
-                'quantity'   => $d->quantity,
-                'spk'        => $d->spk,
-                'pic'        => $d->pic,
-                'department' => $d->department,
-                'keterangan' => $d->keterangan,
-                'tanggal'    => \Carbon\Carbon::parse($d->tanggal)->format('Y-m-d')
-            ];
-        }),
-    ]);
-}
 
 
 

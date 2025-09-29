@@ -122,7 +122,7 @@
                             <td>
                                 <button class="btn btn-info btn-sm btn-history" data-bs-toggle="modal"
                                     data-bs-target="#modalHistory" data-tiket="{{ $req->tiket }}">
-                                    <i class="bi bi-clock-history"></i> History
+                                    <i class="bi bi-info-circle text-white"></i>
                                 </button>
                             </td>
                         </tr>

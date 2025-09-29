@@ -23,9 +23,12 @@
         /* Kolom Nama, Tipe, Keterangan: lebih besar */
         .nama-col,
         .tipe-col,
+        .merk-col,
+        .kategori-col,
+        .jumlah-col,
         .keterangan-col {
-            width: 150px;
-            min-width: 150px;
+            width: 130px;
+            min-width: 130px;
         }
     </style>
 @endpush
@@ -211,7 +214,7 @@
                                                 <option value="">Pilih Merk</option>
                                             </select>
                                         </td>
-                                        
+
                                         <td class="jumlah-col"><input type="number" class="form-control" value="1"
                                                 min="1" required></td>
                                         <td class="keterangan-col">
@@ -361,7 +364,7 @@
                     const res = await fetch(url);
                     if (!res.ok) throw res;
                     const items = await res.json();
-                    targetSelect.innerHTML = '<option value="">Pilih Nama</option>';
+                    targetSelect.innerHTML = '<option value="">Pilih </option>';
                     (items || []).forEach(i => {
                         const opt = document.createElement('option');
                         opt.value = i.nama ?? i.name ?? '';
@@ -378,7 +381,7 @@
                 const kategori = selectKategori?.value;
                 const jenisId = getSelectedId(selectJenis);
                 if (!kategori || !jenisId || !targetSelect) {
-                    if (targetSelect) targetSelect.innerHTML = '<option value="">Pilih Tipe</option>';
+                    if (targetSelect) targetSelect.innerHTML = '<option value="">Pilih </option>';
                     return;
                 }
                 const url =
@@ -388,7 +391,7 @@
                     const res = await fetch(url);
                     if (!res.ok) throw res;
                     const tipes = await res.json();
-                    targetSelect.innerHTML = '<option value="">Pilih Tipe</option>';
+                    targetSelect.innerHTML = '<option value="">Pilih </option>';
                     (tipes || []).forEach(t => {
                         const opt = document.createElement('option');
                         opt.value = t.nama ?? t.name ?? '';
@@ -405,7 +408,7 @@
                 const jenisId = getSelectedId(selectJenis);
                 const tipeId = getSelectedId(selectTipe);
                 if (!jenisId || !tipeId || !targetSelect) {
-                    if (targetSelect) targetSelect.innerHTML = '<option value="">Pilih Merk</option>';
+                    if (targetSelect) targetSelect.innerHTML = '<option value="">Pilih </option>';
                     return;
                 }
                 const url =
@@ -415,7 +418,7 @@
                     const res = await fetch(url);
                     if (!res.ok) throw res;
                     const vendors = await res.json();
-                    targetSelect.innerHTML = '<option value="">Pilih Merk</option>';
+                    targetSelect.innerHTML = '<option value="">Pilih </option>';
                     (vendors || []).forEach(v => {
                         const opt = document.createElement('option');
                         opt.value = v.nama ?? v.name ?? '';
@@ -451,28 +454,28 @@
                 tr.innerHTML = `
       <td class="no-col">${idx + 1}</td>
       <td class="kategori-col">
-        <select class="form-control kategori-select" name="items[${idx}][kategori]">
-          <option value="">Kategori</option>
+        <select class="form-select kategori-select" name="items[${idx}][kategori]">
+          <option value="">Select</option>
           <option value="aset">Aset</option>
           <option value="non-aset">Non-Aset</option>
         </select>
       </td>
       <td class="sn-col"><input type="text" class="form-control sn-input" name="items[${idx}][sn]" placeholder="Nomor Serial" disabled></td>
       <td class="nama-col">
-        <select class="form-control nama-item-select" name="items[${idx}][nama_item]">
-          <option value="">Pilih Nama</option>
+        <select class="form-select nama-item-select" name="items[${idx}][nama_item]">
+          <option value="">Select</option>
         </select>
         <input type="hidden" class="jenis-id" name="items[${idx}][jenis_id]" value="">
       </td>
       <td class="tipe-col">
-        <select class="form-control tipe-select" name="items[${idx}][tipe]">
-          <option value="">Pilih Tipe</option>
+        <select class="form-select tipe-select" name="items[${idx}][tipe]">
+          <option value="">Select</option>
         </select>
         <input type="hidden" class="tipe-id" name="items[${idx}][tipe_id]" value="">
       </td>
       <td class="merk-col">
-        <select class="form-control merk-select" name="items[${idx}][merk]">
-          <option value="">Pilih Merk</option>
+        <select class="form-select merk-select" name="items[${idx}][merk]">
+          <option value="">Select</option>
         </select>
         <input type="hidden" class="vendor-id" name="items[${idx}][vendor_id]" value="">
       </td>
@@ -504,9 +507,9 @@
                         kategoriSelect.value = item.kategori;
                         kategoriSelect.dispatchEvent(new Event('change'));
                     } else {
-                        if (namaSelect) namaSelect.innerHTML = '<option value="">Pilih Nama</option>';
-                        if (tipeSelect) tipeSelect.innerHTML = '<option value="">Pilih Tipe</option>';
-                        if (merkSelect) merkSelect.innerHTML = '<option value="">Pilih Merk</option>';
+                        if (namaSelect) namaSelect.innerHTML = '<option value="">Pilih </option>';
+                        if (tipeSelect) tipeSelect.innerHTML = '<option value="">Pilih </option>';
+                        if (merkSelect) merkSelect.innerHTML = '<option value="">Pilih </option>';
                     }
 
                     // 2) load nama (jenis) jika kategori tersedia
@@ -571,7 +574,7 @@
                             tipeSelect.dispatchEvent(new Event('change'));
                         }
                     } else {
-                        if (tipeSelect) tipeSelect.innerHTML = '<option value="">Pilih Tipe</option>';
+                        if (tipeSelect) tipeSelect.innerHTML = '<option value="">Pilih </option>';
                     }
 
                     // 4) load merk/vendor jika nama & tipe terpilih
@@ -604,7 +607,7 @@
                             merkSelect.value = findOpt.value;
                         }
                     } else {
-                        if (merkSelect) merkSelect.innerHTML = '<option value="">Pilih Merk</option>';
+                        if (merkSelect) merkSelect.innerHTML = '<option value="">Pilih </option>';
                     }
 
                     // 5) jumlah
@@ -779,7 +782,7 @@
                     async function onShown() {
                         const rows = Array.from(document.querySelectorAll('#tabelBarang tbody tr'));
                         const snList = (req.details || []).map(d => d.sn || d.serial_number ||
-                        null);
+                            null);
                         const fetchPromises = snList.map(sn => sn ? fetchItemBySN(sn) : Promise
                             .resolve(null));
                         const snInfos = await Promise.all(fetchPromises);
@@ -800,112 +803,130 @@
             // -----------------------
             // Approve / Reject
             // -----------------------
-async function approveRequest() {
-  const tiket = document.getElementById('tiketInput').value;
-  if (!tiket) { alert('Tiket tidak ditemukan.'); return; }
+            async function approveRequest() {
+                const tiket = document.getElementById('tiketInput').value;
+                if (!tiket) {
+                    alert('Tiket tidak ditemukan.');
+                    return;
+                }
 
-  const csrfToken = getCsrfToken();
-  if (!csrfToken) { alert('CSRF token tidak ditemukan.'); return; }
+                const csrfToken = getCsrfToken();
+                if (!csrfToken) {
+                    alert('CSRF token tidak ditemukan.');
+                    return;
+                }
 
-  // tanggal
-  const tanggalInput = document.getElementById('tanggal_pengiriman');
-  if (!tanggalInput || !tanggalInput.value) { alert('Tanggal Pengiriman wajib diisi.'); return; }
-  const tanggalPengiriman = tanggalInput.value;
-  const catatan = document.querySelector('[name="catatan"]')?.value || '';
+                // tanggal
+                const tanggalInput = document.getElementById('tanggal_pengiriman');
+                if (!tanggalInput || !tanggalInput.value) {
+                    alert('Tanggal Pengiriman wajib diisi.');
+                    return;
+                }
+                const tanggalPengiriman = tanggalInput.value;
+                const catatan = document.querySelector('[name="catatan"]')?.value || '';
 
-  // ambil data items
-  const rows = document.querySelectorAll('#tabelBarang tbody tr');
-  const items = [];
-  let valid = true;
-  for (const row of rows) {
-    const kategori = row.querySelector('.kategori-select')?.value || '';
-    const namaLabel = row.querySelector('.nama-item-select')?.value?.trim() || '';
-    const sn = row.querySelector('.sn-col input')?.value.trim() || null;
-    const jumlahVal = row.querySelector('.jumlah-col input')?.value.trim();
-    const jumlah = jumlahVal ? parseInt(jumlahVal, 10) : 0;
-    const keterangan = row.querySelector('.keterangan-col input')?.value.trim() || null;
+                // ambil data items
+                const rows = document.querySelectorAll('#tabelBarang tbody tr');
+                const items = [];
+                let valid = true;
+                for (const row of rows) {
+                    const kategori = row.querySelector('.kategori-select')?.value || '';
+                    const namaLabel = row.querySelector('.nama-item-select')?.value?.trim() || '';
+                    const sn = row.querySelector('.sn-col input')?.value.trim() || null;
+                    const jumlahVal = row.querySelector('.jumlah-col input')?.value.trim();
+                    const jumlah = jumlahVal ? parseInt(jumlahVal, 10) : 0;
+                    const keterangan = row.querySelector('.keterangan-col input')?.value.trim() || null;
 
-    if (!kategori || !namaLabel || !jumlah || jumlah <= 0) { valid = false; continue; }
-    if (kategori === 'aset' && (!sn || sn === '')) { alert(`Serial Number wajib diisi untuk barang Aset di baris ${row.rowIndex}.`); return; }
+                    if (!kategori || !namaLabel || !jumlah || jumlah <= 0) {
+                        valid = false;
+                        continue;
+                    }
+                    if (kategori === 'aset' && (!sn || sn === '')) {
+                        alert(`Serial Number wajib diisi untuk barang Aset di baris ${row.rowIndex}.`);
+                        return;
+                    }
 
-    items.push({
-      kategori,
-      nama_item: namaLabel,
-      tipe: row.querySelector('.tipe-select')?.value || null,
-      merk: row.querySelector('.merk-select')?.value || null,
-      jenis_id: row.querySelector('.jenis-id')?.value || null,
-      tipe_id: row.querySelector('.tipe-id')?.value || null,
-      vendor_id: row.querySelector('.vendor-id')?.value || null,
-      sn: sn || null,
-      jumlah,
-      keterangan: keterangan || null
-    });
-  }
+                    items.push({
+                        kategori,
+                        nama_item: namaLabel,
+                        tipe: row.querySelector('.tipe-select')?.value || null,
+                        merk: row.querySelector('.merk-select')?.value || null,
+                        jenis_id: row.querySelector('.jenis-id')?.value || null,
+                        tipe_id: row.querySelector('.tipe-id')?.value || null,
+                        vendor_id: row.querySelector('.vendor-id')?.value || null,
+                        sn: sn || null,
+                        jumlah,
+                        keterangan: keterangan || null
+                    });
+                }
 
-  if (!valid || items.length === 0) { alert('Isi minimal satu barang dengan lengkap.'); return; }
+                if (!valid || items.length === 0) {
+                    alert('Isi minimal satu barang dengan lengkap.');
+                    return;
+                }
 
-  // ekspedisi (hanya ya/tidak)
-  const ekspedisi = document.querySelector('input[name="ekspedisi"]:checked')?.value || 'tidak';
+                // ekspedisi (hanya ya/tidak)
+                const ekspedisi = document.querySelector('input[name="ekspedisi"]:checked')?.value || 'tidak';
 
-  // Build FormData - IMPORTANT: append _token as well for safety
-  const fd = new FormData();
-  fd.append('_token', csrfToken);                 // helpful for serverside CSRF
-  fd.append('tiket', tiket);
-  fd.append('tanggal_pengiriman', tanggalPengiriman);
-  fd.append('catatan', catatan);
-  fd.append('ekspedisi', ekspedisi);
-  fd.append('items', JSON.stringify(items));
+                // Build FormData - IMPORTANT: append _token as well for safety
+                const fd = new FormData();
+                fd.append('_token', csrfToken); // helpful for serverside CSRF
+                fd.append('tiket', tiket);
+                fd.append('tanggal_pengiriman', tanggalPengiriman);
+                fd.append('catatan', catatan);
+                fd.append('ekspedisi', ekspedisi);
+                fd.append('items', JSON.stringify(items));
 
-  // files[] append (multiple) + backward compatibility file_upload
-  const fileEl = document.getElementById('fileUpload');
-  if (fileEl && fileEl.files && fileEl.files.length) {
-    for (let i = 0; i < fileEl.files.length; i++) fd.append('files[]', fileEl.files[i]);
-    fd.append('file_upload', fileEl.files[0]);
-  }
+                // files[] append (multiple) + backward compatibility file_upload
+                const fileEl = document.getElementById('fileUpload');
+                if (fileEl && fileEl.files && fileEl.files.length) {
+                    for (let i = 0; i < fileEl.files.length; i++) fd.append('files[]', fileEl.files[i]);
+                    fd.append('file_upload', fileEl.files[0]);
+                }
 
-  // DEBUG: inspect FormData (for dev only)
-  // This will print keys and values (files shown as File objects)
-  for (const pair of fd.entries()) {
-    console.log('FD', pair[0], pair[1]);
-  }
+                // DEBUG: inspect FormData (for dev only)
+                // This will print keys and values (files shown as File objects)
+                for (const pair of fd.entries()) {
+                    console.log('FD', pair[0], pair[1]);
+                }
 
-  try {
-    const response = await fetch(`/kepalagudang/request/${encodeURIComponent(tiket)}/approve`, {
-      method: 'POST',
-      headers: {
-        'X-CSRF-TOKEN': csrfToken    // do not set Content-Type
-      },
-      body: fd
-    });
+                try {
+                    const response = await fetch(`/kepalagudang/request/${encodeURIComponent(tiket)}/approve`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken // do not set Content-Type
+                        },
+                        body: fd
+                    });
 
-    if (!response.ok) {
-      const txt = await response.text();
-      console.error('Server response not OK:', response.status, txt);
-      // show server validation JSON if present
-      try {
-        const json = JSON.parse(txt);
-        console.error('Server JSON error:', json);
-        alert('Gagal: ' + (json.message || txt));
-      } catch (e) {
-        alert('Server error ' + response.status);
-      }
-      return;
-    }
+                    if (!response.ok) {
+                        const txt = await response.text();
+                        console.error('Server response not OK:', response.status, txt);
+                        // show server validation JSON if present
+                        try {
+                            const json = JSON.parse(txt);
+                            console.error('Server JSON error:', json);
+                            alert('Gagal: ' + (json.message || txt));
+                        } catch (e) {
+                            alert('Server error ' + response.status);
+                        }
+                        return;
+                    }
 
-    const data = await response.json();
-    if (data.success) {
-      alert(data.message || 'Berhasil.');
-      location.reload();
-    } else {
-      alert('Gagal: ' + (data.message || 'Terjadi kesalahan.'));
-    }
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(data.message || 'Berhasil.');
+                        location.reload();
+                    } else {
+                        alert('Gagal: ' + (data.message || 'Terjadi kesalahan.'));
+                    }
 
-  } catch (err) {
-    console.error('Approve request error:', err);
-    alert('Terjadi kesalahan teknis. Silakan coba lagi atau refresh halaman.');
-  }
-}
-window.approveRequest = approveRequest;
+                } catch (err) {
+                    console.error('Approve request error:', err);
+                    alert('Terjadi kesalahan teknis. Silakan coba lagi atau refresh halaman.');
+                }
+            }
+            window.approveRequest = approveRequest;
 
             function rejectRequest() {
                 const tiket = document.getElementById('tiketInput').value;
@@ -1070,7 +1091,7 @@ window.approveRequest = approveRequest;
                 const tipeId = snInfo.tipe_id ?? null;
                 if (tipeId) {
                     const optT = ensureOption(tipeSelect, tipeId, snInfo.tipe_nama ?? snInfo.tipe ?? String(
-                    tipeId));
+                        tipeId));
                     if (optT) {
                         tipeSelect.value = optT.value;
                         tipeSelect.dispatchEvent(new Event('change'));
