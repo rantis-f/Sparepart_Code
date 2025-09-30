@@ -18,6 +18,7 @@ class SuperAdminController extends Controller
     {
         $date = $request->input('date', Carbon::today()->toDateString());
 
+        // --- Barang Masuk ---
         $groups = DB::table('detail_barang')
             ->select('jenis_id', 'tipe_id', DB::raw('SUM(quantity) as total_qty'), DB::raw('MAX(id) as latest_id'))
             ->whereDate('tanggal', $date)
@@ -25,10 +26,9 @@ class SuperAdminController extends Controller
             ->get();
 
         if ($groups->isEmpty()) {
-            $detail = collect();
-            $totalPerDay = 0;
-            return view('kepalagudang.dashboard', compact('detail', 'date', 'totalPerDay'));
-        }
+            $detailMasuk = collect();
+            $totalMasuk = 0;
+        } else {
             $latestIds = $groups->pluck('latest_id')->filter()->all();
             $latestRecords = DetailBarang::with(['jenis', 'tipe'])
                 ->whereIn('id', $latestIds)
@@ -47,62 +47,53 @@ class SuperAdminController extends Controller
                 ];
             })->sortByDesc('tiket_sparepart')->values();
 
-        $latestIds = $groups->pluck('latest_id')->filter()->all();
+            $totalMasuk = $groups->sum('total_qty');
+        }
 
-        $latestRecords = DetailBarang::with(['jenis', 'tipe'])
-            ->whereIn('id', $latestIds)
-            ->get()
-            ->keyBy('id');
-        $detailKeluar = PengirimanDetail::with('pengiriman')
-            ->whereHas('pengiriman', function ($query) use ($date) {
-                $query->whereDate('tanggal_transaksi', $date);
+        // --- Barang Keluar ---
+        $detailKeluar = Pengiriman::with('details', 'permintaan')
+            ->whereHas('permintaan', function ($query) use ($date) {
+                $query->whereDate('tanggal_perubahan', $date);
+            })
+            ->whereHas('permintaan', function ($query) use ($date) {
+                $query->where('status_super_admin', 'approved');
             })
             ->orderBy('id', 'desc')->take(5)
             ->get()
-             ->map(function ($item) {
-                return (object) [
-                    'id' => $item->id,
-                    'nama_barang' => $item->nama ?? '-',
-                    'jumlah' => $item->jumlah ?? 0,
-                    'tanggal' => $item->pengiriman?->tanggal_transaksi ?? '-',
-                    'tiket' => $item->tiket_pengiriman ?? '-',
-                ];
-            });
-       $totalKeluar = PengirimanDetail::whereHas('pengiriman', function ($query) use ($date) {
-            $query->whereDate('tanggal_transaksi', $date);
-        })->sum('jumlah');
-
-        $rows = $groups->map(function ($g) use ($latestRecords, $date) {
-            $r = $latestRecords->get($g->latest_id);
+            ->map(function ($item) {
+                return $item->details->map(function ($detail) use ($item) {
+                    return (object) [
+                        'id' => $detail->id,
+                        'nama_barang' => $detail->nama ?? '-',
+                        'jumlah' => $detail->jumlah ?? 0,
+                        'tanggal' => $item->tanggal_transaksi ?? '-',
+                        'tiket' => $item->permintaan->tiket ?? '-',
+                    ];
+                });
+            })->flatten(1);
 
 
-            $jenis_nama = $r && $r->jenis ? $r->jenis->nama : null;
-            $tipe_nama = $r && $r->tipe ? $r->tipe->nama : null;
 
-            return (object) [
-                'id' => $g->latest_id,
-                'tiket_sparepart' => $r ? $r->tiket_sparepart : null,
-                'nama_barang' => $r ? $r->nama_barang : null,
-                'qty_record' => $r ? $r->quantity : 0,
-                'jenis' => $r ? $r->jenis : (object) ['id' => $g->jenis_id, 'nama' => $jenis_nama],
-                'tipe' => $r ? $r->tipe : (object) ['id' => $g->tipe_id, 'nama' => $tipe_nama],
-                'jenis_nama' => $jenis_nama,
-                'tipe_nama' => $tipe_nama,
-                'total_qty' => (int) $g->total_qty,
-                'tanggal' => $r ? $r->tanggal : $date,
-            ];
-        })->sortByDesc('tiket_sparepart')->values();
+        $totalKeluar = Pengiriman::with(['details', 'permintaan'])
+    ->whereHas('permintaan', function ($query) use ($date) {
+        $query->whereDate('tanggal_perubahan', $date)
+              ->where('status_super_admin', 'approved');
+    })
+    ->get()
+    ->flatMap(function ($pengiriman) {
+        return $pengiriman->details;
+    })
+    ->sum('jumlah');
 
-        $detail = $rows;
-        $totalPerDay = $groups->sum('total_qty');
-        $totalMasuk = DetailBarang::whereDate('tanggal', $date)->sum('quantity');
-        $totalAdminPending = Permintaan::where('status_admin', 'on progres')
+            $totalTransaksi= Permintaan::whereDate('tanggal_perubahan', $date)
+                          ->where('status_super_admin', 'approved')
+                          ->count();
+ $totalAdminPending = Permintaan::where('status_admin', 'on progres')
                           ->count();
         $totalSuperadminPending = Permintaan::where('status_super_admin', 'on progres')
                           ->count();
 
-
-        return view('superadmin.dashboard', compact('detail', 'date', 'totalPerDay', 'totalMasuk', 'detailKeluar', 'totalAdminPending','totalSuperadminPending'));
+        return view('superadmin.dashboard', compact('detailMasuk', 'date', 'totalMasuk', 'totalKeluar','detailKeluar', 'totalAdminPending','totalSuperadminPending','totalTransaksi'));
     }
 
     public function requestIndex()
@@ -256,7 +247,7 @@ class SuperAdminController extends Controller
                         }
                     }
 
-                    \App\Models\DetailBarang::whereIn('serial_number', $snList)
+                    DetailBarang::whereIn('serial_number', $snList)
                         ->decrement('quantity', 1);
                 }
 

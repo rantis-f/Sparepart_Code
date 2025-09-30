@@ -37,7 +37,16 @@ class SparepartController extends Controller
             $query->whereHas('details', function ($q) use ($request) {
                 $q->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_berakhir]);
             });
+        } elseif ($request->filled('tanggal_mulai')) {
+            $query->whereHas('details', function ($q) use ($request) {
+                $q->where('tanggal', '>=', $request->tanggal_mulai);
+            });
+        } elseif ($request->filled('tanggal_berakhir')) {
+            $query->whereHas('details', function ($q) use ($request) {
+                $q->where('tanggal', '<=', $request->tanggal_berakhir);
+            });
         }
+
 
         if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);

@@ -30,14 +30,14 @@
                 <label for="dateTo" class="form-label">Sampai Tanggal</label>
                 <input type="date" class="form-control" id="dateTo">
             </div>
-            <div class="col-md-3 mb-3">
+            {{-- <div class="col-md-3 mb-3">
                 <label for="jenisFilter" class="form-label">Jenis</label>
                 <select class="form-select" id="jenisFilter">
                     <option value="">Semua Jenis</option>
                     <option value="masuk">Masuk</option>
                     <option value="keluar">Keluar</option>
                 </select>
-            </div>
+            </div> --}}
             <div class="col-md-3 mb-3">
                 <label for="statusFilter" class="form-label">Status</label>
                 <select class="form-select" id="statusFilter">

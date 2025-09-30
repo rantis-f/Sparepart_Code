@@ -20,7 +20,8 @@
                     <select class="form-select" name="nama" id="jenisFilter">
                         <option value="">Semua Jenis</option>
                         @foreach ($jenis as $j)
-                            <option value="{{ $j->id }}" {{ (string) request('nama') === (string) $j->id ? 'selected' : '' }}>
+                            <option value="{{ $j->id }}"
+                                {{ (string) request('nama') === (string) $j->id ? 'selected' : '' }}>
                                 {{ $j->nama }}
                             </option>
                         @endforeach
@@ -30,16 +31,17 @@
                     <label for="statusFilter" class="form-label">Status Sparepart</label>
                     <select class="form-select" name="status" id="statusFilter">
                         <option value="">Semua Status</option>
-                        <option value="tersedia" {{ request('status') == 'tersedia' ? 'selected' : '' }}>Tersedia</option>
-                        <option value="habis" {{ request('status') == 'habis' ? 'selected' : '' }}>Habis</option>
-                        <option value="dikirim" {{ request('status') == 'dikirim' ? 'selected' : '' }}>Dikirim</option>
+                        <option value="sparepart baru" {{ request('status') == 'sparepart baru' ? 'selected' : '' }}>
+                            Sparepart Baru</option>
+                        <option value="sparepart lama" {{ request('status') == 'sparepart lama' ? 'selected' : '' }}>
+                            Sparepart Lama</option>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label for="searchFilter" class="form-label">Cari Sparepart</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Cari ID atau nama sparepart..." name="search"
-                            value="{{ request('search') }}">
+                        <input type="text" class="form-control" placeholder="Cari ID atau nama sparepart..."
+                            name="search" value="{{ request('search') }}">
                         <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
                     </div>
                 </div>
@@ -63,7 +65,7 @@
                     </select>
                 </div>
                 <div class="col-12 text-end">
-                    <a href="{{ route('kepalagudang.sparepart.index') }}" class="btn btn-light me-2">
+                    <a href="{{ route('superadmin.sparepart.index') }}" class="btn btn-light me-2">
                         <i class="bi bi-arrow-clockwise me-1"></i> Reset
                     </a>
                     <button type="submit" class="btn btn-primary">
@@ -342,17 +344,33 @@
             sparepartDetailModal.show();
         }
 
-        function showDetail(tiket_sparepart) {
-            fetch(`/superadmin/sparepart/${tiket_sparepart}/detail`)
-                .then(res => {
-                    if (!res.ok) throw new Error('Network response was not ok');
-                    return res.json();
-                })
-                .then(data => showTransaksiDetail(data))
-                .catch(err => {
-                    console.error('Fetch error:', err);
-                    showToast('Gagal mengambil detail!', 'danger');
+function showDetail(tiket_sparepart) {
+    fetch(`/superadmin/sparepart/${tiket_sparepart}/detail`)
+        .then(res => res.json())
+        .then(data => {
+            const status = document.getElementById('statusFilter')?.value || '';
+            const tanggalMulai = document.getElementById('tanggalMulai')?.value || '';
+            const tanggalBerakhir = document.getElementById('tanggalBerakhir')?.value || '';
+
+            // Filter status (jika ada)
+            if (status) {
+                data.items = data.items.filter(item => (item.status || '').toString() === status.toString());
+            }
+
+            // Filter tanggal (jika ada)
+            if (tanggalMulai && tanggalBerakhir) {
+                data.items = data.items.filter(item => {
+                    const tgl = new Date(item.tanggal);
+                    return tgl >= new Date(tanggalMulai) && tgl <= new Date(tanggalBerakhir);
                 });
-        }
+            }
+
+            showTransaksiDetail(data);
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Gagal mengambil detail!');
+        });
+}
     </script>
 @endpush

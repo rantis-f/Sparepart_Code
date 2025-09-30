@@ -45,7 +45,7 @@
                 <div class="card-icon bg-warning bg-opacity-10 text-warning">
                     <i class="bi bi-clock-history"></i>
                 </div>
-                <h4 class="stats-number">{{ ($totalMasuk ?? 0) + 3 }}</h4>
+                <h4 class="stats-number">{{ $totalTransaksi }}</h4>
                 <p class="stats-title">Transaksi Hari Ini</p>
             </div>
         </div>
@@ -66,7 +66,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($detail as $index => $d)
+                            @forelse($detailMasuk as $index => $d)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $d->jenis_nama ?? (optional($d->jenis)->nama ?? '-') }}

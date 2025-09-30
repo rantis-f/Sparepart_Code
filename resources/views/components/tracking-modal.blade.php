@@ -54,8 +54,8 @@ function showStatusDetailModal(tiket, userRole) {
             const roles = [
                 { key: 'ro', label: 'Kepala RO' },
                 { key: 'gudang', label: 'Kepala Gudang' },
-                { key: 'admin', label: 'Admin' },
-                { key: 'super_admin', label: 'Super Admin' }
+                { key: 'admin', label: 'Leader Infarstructure Maintenance' },
+                { key: 'super_admin', label: 'Head of Departement NR' }
             ];
 
             roles.forEach(r => {

@@ -785,22 +785,35 @@
             sparepartDetailModal.show();
         }
 
-        function showDetail(tiket_sparepart) {
-            fetch(`/kepalagudang/sparepart/${tiket_sparepart}/detail`)
-                .then(res => res.json())
-                .then(data => {
-                    const status = document.getElementById('statusFilter') ? document.getElementById('statusFilter')
-                        .value : '';
-                    if (status) {
-                        data.items = data.items.filter(item => (item.status || '').toString() === status.toString());
-                    }
-                    showTransaksiDetail(data);
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('Gagal mengambil detail!');
+function showDetail(tiket_sparepart) {
+    fetch(`/kepalagudang/sparepart/${tiket_sparepart}/detail`)
+        .then(res => res.json())
+        .then(data => {
+            const status = document.getElementById('statusFilter')?.value || '';
+            const tanggalMulai = document.getElementById('tanggalMulai')?.value || '';
+            const tanggalBerakhir = document.getElementById('tanggalBerakhir')?.value || '';
+
+            // Filter status (jika ada)
+            if (status) {
+                data.items = data.items.filter(item => (item.status || '').toString() === status.toString());
+            }
+
+            // Filter tanggal (jika ada)
+            if (tanggalMulai && tanggalBerakhir) {
+                data.items = data.items.filter(item => {
+                    const tgl = new Date(item.tanggal);
+                    return tgl >= new Date(tanggalMulai) && tgl <= new Date(tanggalBerakhir);
                 });
-        }
+            }
+
+            showTransaksiDetail(data);
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Gagal mengambil detail!');
+        });
+}
+
         document.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.btn-edit');
             console.log(editBtn)

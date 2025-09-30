@@ -22,8 +22,7 @@
                 <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                 <select name="status" id="status" class="w-full border-gray-300 rounded-lg">
                     <option value="all" {{ ($filters['status'] ?? '') == 'all' ? 'selected' : '' }}>Semua</option>
-                    <option value="pending" {{ ($filters['status'] ?? '') == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="diterima" {{ ($filters['status'] ?? '') == 'diterima' ? 'selected' : '' }}>Diterima</option>
+                    <option value="diterima" {{ ($filters['status'] ?? '') == 'diterima' ? 'selected' : '' }}>Disetujui</option>
                     <option value="ditolak" {{ ($filters['status'] ?? '') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
             </div>

@@ -49,7 +49,7 @@
                 <div class="card-icon bg-warning bg-opacity-10 text-warning">
                     <i class="bi bi-clock-history"></i>
                 </div>
-                <h4 class="stats-number">{{ $totalKeluar ?? 0 }}</h4>
+                    <h4 class="stats-number">{{ $totalTransaksi ?? 0 }}</h4>
                 <p class="stats-title">Transaksi Hari Ini</p>
             </div>
         </div>
@@ -70,7 +70,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($detail as $index => $d)
+                            @forelse($detailMasuk as $index => $d)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $d->jenis_nama ?? (optional($d->jenis)->nama ?? '-') }}
@@ -111,12 +111,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
-                                    <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                                    Tidak ada data keluar
-                                </td>
-                            </tr>
+                            @forelse($detailKeluar as $index => $d)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $d->nama_barang }}</td>
+                                    <td>{{ $d->jumlah }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($d->tanggal)->format('d M Y') }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                                        Tidak ada data keluar
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

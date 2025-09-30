@@ -19,6 +19,7 @@ class KepalaROController extends Controller
             ->whereHas('user', function ($q) use ($user) {
                 $q->where('region', $user->region);
             })
+            ->orderBy('id', 'desc')
             ->get();
 
         return view('kepalaro.dashboard', compact('requests'));
@@ -87,7 +88,7 @@ class KepalaROController extends Controller
             ->whereHas('user', function ($q) use ($user) {
                 $q->where('region', $user->region);
             })
-            ->where('status_ro', 'on progres') // ✅ Sama seperti approve
+            ->where('status_ro', 'on progres')
             ->firstOrFail();
 
         // Update status

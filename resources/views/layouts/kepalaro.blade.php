@@ -70,7 +70,7 @@
                 </span>
                 <div x-show="sidebarExpanded" class="flex items-center space-x-2">
                     <img src="{{ asset('images/logo-pgn.png') }}" alt="PGN Logo" class="h-6">
-                    <span class="text-sm font-semibold">AMS</span>
+                    <span class="text-sm font-semibold">SiSpare +</span>
                 </div>
             </div>
 
@@ -87,7 +87,7 @@
                         <span x-show="!sidebarExpanded && pendingCount > 0"
                               class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                     </div>
-                    <span x-show="sidebarExpanded" class="ml-2 text-sm">Dashboard</span>
+                    <span x-show="sidebarExpanded" class="ml-2 text-sm">Approval</span>
                     <span x-show="sidebarExpanded && pendingCount > 0"
                           class="ml-auto bg-red-500 text-white text-xs font-medium w-5 h-5 flex items-center justify-center rounded-full">
                         <template x-if="pendingCount < 10" x-text="pendingCount"></template>
