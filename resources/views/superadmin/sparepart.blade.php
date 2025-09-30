@@ -17,7 +17,7 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <label for="jenisFilter" class="form-label">Jenis Sparepart</label>
-                    <select class="form-select" name="jenis" id="jenisFilter">
+                    <select class="form-select" name="nama" id="jenisFilter">
                         <option value="">Semua Jenis</option>
                         @foreach ($jenis as $j)
                             <option value="{{ $j->id }}" {{ (string) request('nama') === (string) $j->id ? 'selected' : '' }}>
@@ -74,57 +74,32 @@
         </form>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="stats-card">
-                <div class="d-flex align-items-center">
-                    <div class="bg-primary bg-opacity-10 p-3 rounded me-3">
-                        <i class="bi bi-box-seam text-primary fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Total Sparepart</h6>
-                        <h4 class="mb-0 fw-bold text-primary">{{ $totalQty }}</h4>
-                    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="dashboard-card p-4">
+                <div class="card-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-tools"></i>
                 </div>
+                <h4 class="stats-number">{{ $totalQty }}</h4>
+                <p class="stats-title">Total Sparepart</p>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stats-card">
-                <div class="d-flex align-items-center">
-                    <div class="bg-success bg-opacity-10 p-3 rounded me-3">
-                        <i class="bi bi-check-circle text-success fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Tersedia</h6>
-                        <h4 class="mb-0 fw-bold text-success">{{ $totalTersedia }}</h4>
-                    </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="dashboard-card p-4">
+                <div class="card-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check-circle"></i>
                 </div>
+                <h4 class="stats-number">{{ $totalBaru }}</h4>
+                <p class="stats-title">Sparepart Baru</p>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stats-card">
-                <div class="d-flex align-items-center">
-                    <div class="bg-warning bg-opacity-10 p-3 rounded me-3">
-                        <i class="bi bi-cart text-warning fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Dikirimn</h6>
-                        <h4 class="mb-0 fw-bold text-warning">{{ $totalDikirim }}</h4>
-                    </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="dashboard-card p-4">
+                <div class="card-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-arrow-repeat"></i>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stats-card">
-                <div class="d-flex align-items-center">
-                    <div class="bg-danger bg-opacity-10 p-3 rounded me-3">
-                        <i class="bi bi-x-circle text-danger fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Habis</h6>
-                        <h4 class="mb-0 fw-bold text-danger">{{ $totalHabis }}</h4>
-                    </div>
-                </div>
+                <h4 class="stats-number">{{ $totalLama }}</h4>
+                <p class="stats-title">Sparepart Lama</p>
             </div>
         </div>
     </div>

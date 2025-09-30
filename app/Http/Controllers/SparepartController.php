@@ -173,14 +173,16 @@ class SparepartController extends Controller
 
         $listBarang = $query->orderBy('tiket_sparepart', 'desc')->paginate(5);
 
-        $totalPerStatus = DB::table('detail_barang as d')
-            ->select('d.status', DB::raw('SUM(d.quantity) as total_quantity'))
-            ->groupBy('d.status')
-            ->pluck('total_quantity', 'status');
-
-        $totalTersedia = $totalPerStatus->get('tersedia', 0);
-        $totalDikirim  = $totalPerStatus->get('dikirim', 0);
-        $totalHabis    = $totalPerStatus->get('habis', 0);
+        $totalBaru = DetailBarang::whereHas('listBarang', function ($query) {
+            $query->where('kategori', 'aset');
+        })->where('status', 'sparepart baru')->sum('quantity') + DetailBarang::whereHas('listBarang', function ($query) {
+            $query->where('kategori', '!=', 'aset');
+        })->where('status', 'sparepart baru')->count();
+        $totalLama = DetailBarang::whereHas('listBarang', function ($query) {
+            $query->where('kategori', 'aset');
+        })->where('status', 'sparepart lama')->sum('quantity') + DetailBarang::whereHas('listBarang', function ($query) {
+            $query->where('kategori', '!=', 'aset');
+        })->where('status', 'sparepart lama')->count();
 
         $totalsPerTiket = [];
 
@@ -202,7 +204,15 @@ class SparepartController extends Controller
         $tipe = TipeBarang::all();
         $vendor = Vendor::all();
         $detail = DetailBarang::all();
-        $totalQty = DetailBarang::sum('quantity');
+        $totalQty = DetailBarang::whereHas('listBarang', function ($query) {
+            $query->where('kategori', 'aset');
+        })->sum('quantity')
+            +
+            DetailBarang::whereHas('listBarang', function ($query) {
+                $query->where('kategori', '!=', 'aset');
+            })->count();
+
+
 
         return view('superadmin.sparepart', [
             'listBarang'    => $listBarang,
@@ -213,9 +223,8 @@ class SparepartController extends Controller
             'detail'         => $detail,
             'jenisSparepart' => $jenisSparepart,
             'totalQty'      => $totalQty,
-            'totalTersedia' => $totalTersedia,
-            'totalDikirim'  => $totalDikirim,
-            'totalHabis'    => $totalHabis,
+            'totalBaru' => $totalBaru,
+            'totalLama'  => $totalLama,
             'totalsPerTiket' => $totalsPerTiket,
             'filterJenis'   => $request->jenis,
             'filterStatus'  => $request->status,

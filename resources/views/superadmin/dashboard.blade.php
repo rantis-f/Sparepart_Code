@@ -25,7 +25,7 @@
                 <div class="card-icon bg-danger bg-opacity-10 text-danger">
                     <i class="bi bi-box-arrow-up"></i>
                 </div>
-                <h4 class="stats-number">15</h4>
+                <h4 class="stats-number">{{ $totalKeluar ?? 0 }}</h4>
                 <p class="stats-title">Barang Keluar</p>
             </div>
         </div>
@@ -49,7 +49,7 @@
                 <div class="card-icon bg-warning bg-opacity-10 text-warning">
                     <i class="bi bi-clock-history"></i>
                 </div>
-                <h4 class="stats-number">{{ ($totalMasuk ?? 0) + 3 }}</h4>
+                <h4 class="stats-number">{{ $totalKeluar ?? 0 }}</h4>
                 <p class="stats-title">Transaksi Hari Ini</p>
             </div>
         </div>

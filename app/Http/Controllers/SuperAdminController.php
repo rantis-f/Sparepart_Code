@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Permintaan;
 use App\Models\Pengiriman;
+use App\Models\PengirimanDetail;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -26,8 +27,25 @@ class SuperAdminController extends Controller
         if ($groups->isEmpty()) {
             $detail = collect();
             $totalPerDay = 0;
-            return view('superadmin.dashboard', compact('detail', 'date', 'totalPerDay'));
+            return view('kepalagudang.dashboard', compact('detail', 'date', 'totalPerDay'));
         }
+            $latestIds = $groups->pluck('latest_id')->filter()->all();
+            $latestRecords = DetailBarang::with(['jenis', 'tipe'])
+                ->whereIn('id', $latestIds)
+                ->get()
+                ->keyBy('id');
+
+            $detailMasuk = $groups->map(function ($g) use ($latestRecords, $date) {
+                $r = $latestRecords->get($g->latest_id);
+                return (object) [
+                    'id' => $g->latest_id,
+                    'tiket_sparepart' => $r ? $r->tiket_sparepart : null,
+                    'jenis_nama' => $r && $r->jenis ? $r->jenis->nama : null,
+                    'tipe_nama' => $r && $r->tipe ? $r->tipe->nama : null,
+                    'total_qty' => (int) $g->total_qty,
+                    'tanggal' => $r ? $r->tanggal : $date,
+                ];
+            })->sortByDesc('tiket_sparepart')->values();
 
         $latestIds = $groups->pluck('latest_id')->filter()->all();
 
@@ -35,9 +53,28 @@ class SuperAdminController extends Controller
             ->whereIn('id', $latestIds)
             ->get()
             ->keyBy('id');
+        $detailKeluar = PengirimanDetail::with('pengiriman')
+            ->whereHas('pengiriman', function ($query) use ($date) {
+                $query->whereDate('tanggal_transaksi', $date);
+            })
+            ->orderBy('id', 'desc')->take(5)
+            ->get()
+             ->map(function ($item) {
+                return (object) [
+                    'id' => $item->id,
+                    'nama_barang' => $item->nama ?? '-',
+                    'jumlah' => $item->jumlah ?? 0,
+                    'tanggal' => $item->pengiriman?->tanggal_transaksi ?? '-',
+                    'tiket' => $item->tiket_pengiriman ?? '-',
+                ];
+            });
+       $totalKeluar = PengirimanDetail::whereHas('pengiriman', function ($query) use ($date) {
+            $query->whereDate('tanggal_transaksi', $date);
+        })->sum('jumlah');
 
         $rows = $groups->map(function ($g) use ($latestRecords, $date) {
             $r = $latestRecords->get($g->latest_id);
+
 
             $jenis_nama = $r && $r->jenis ? $r->jenis->nama : null;
             $tipe_nama = $r && $r->tipe ? $r->tipe->nama : null;
@@ -59,8 +96,13 @@ class SuperAdminController extends Controller
         $detail = $rows;
         $totalPerDay = $groups->sum('total_qty');
         $totalMasuk = DetailBarang::whereDate('tanggal', $date)->sum('quantity');
+        $totalAdminPending = Permintaan::where('status_admin', 'on progres')
+                          ->count();
+        $totalSuperadminPending = Permintaan::where('status_super_admin', 'on progres')
+                          ->count();
 
-        return view('superadmin.dashboard', compact('detail', 'date', 'totalPerDay', 'totalMasuk'));
+
+        return view('superadmin.dashboard', compact('detail', 'date', 'totalPerDay', 'totalMasuk', 'detailKeluar', 'totalAdminPending','totalSuperadminPending'));
     }
 
     public function requestIndex()
