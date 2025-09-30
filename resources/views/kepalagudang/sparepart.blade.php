@@ -77,8 +77,10 @@
                     <label for="statusFilter" class="form-label">Status Sparepart</label>
                     <select class="form-select" name="status" id="statusFilter">
                         <option value="">Semua Status</option>
-                        <option value="sparepart baru" {{ request('status') == 'sparepart baru' ? 'selected' : '' }}>Sparepart Baru</option>
-                        <option value="sparepart lama" {{ request('status') == 'sparepart lama' ? 'selected' : '' }}>Sparepart Lama</option>
+                        <option value="sparepart baru" {{ request('status') == 'sparepart baru' ? 'selected' : '' }}>
+                            Sparepart Baru</option>
+                        <option value="sparepart lama" {{ request('status') == 'sparepart lama' ? 'selected' : '' }}>
+                            Sparepart Lama</option>
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -143,9 +145,9 @@
                         <tr>
                             <td><span class="fw-bold">{{ $barang->tiket_sparepart }}</span></td>
                             <td>
-    {{ $barang->jenisBarang?->nama ?? '-' }}
-    {{ $barang->tipeBarang?->nama ?? '-' }}
-</td>
+                                {{ $barang->jenisBarang?->nama ?? '-' }}
+                                {{ $barang->tipeBarang?->nama ?? '-' }}
+                            </td>
                             <td>{{ $barang->quantity }}</td>
                             @if ($filterStatus === 'sparepart lama')
                                 <td>{{ $totalsPerTiket[$barang->tiket_sparepart]['sparepart lama'] ?? 0 }}</td>
@@ -338,9 +340,11 @@
                                 <select class="form-select @error('status') is-invalid @enderror" id="status"
                                     name="status" required>
                                     <option value="" selected>Pilih Status</option>
-                                    <option value="sparepart baru" {{ old('status') == 'sparepart baru' ? 'selected' : '' }}>Sparepart Baru
+                                    <option value="sparepart baru"
+                                        {{ old('status') == 'sparepart baru' ? 'selected' : '' }}>Sparepart Baru
                                     </option>
-                                    <option value="sparepart lama" {{ old('status') == 'sparepart lama' ? 'selected' : '' }}>Sparepart Lama
+                                    <option value="sparepart lama"
+                                        {{ old('status') == 'sparepart lama' ? 'selected' : '' }}>Sparepart Lama
                                     </option>
                                 </select>
 
@@ -416,7 +420,7 @@
         </div>
     </div>
 
-        <!-- Modal Edit Sparepart (mirip form tambah) -->
+    <!-- Modal Edit Sparepart (mirip form tambah) -->
     <div class="modal fade" id="editSparepartModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -517,7 +521,7 @@
 
                                     <option value="sparepart lama"
                                         {{ old('status', $detail->first()->status ?? '') == 'sparepart lama' ? 'selected' : '' }}>
-                                        Sparepart Lama                                  
+                                        Sparepart Lama
                                     </option>
                                 </select>
 
@@ -782,17 +786,21 @@
         }
 
         function showDetail(tiket_sparepart) {
-    fetch(`/kepalagudang/sparepart/${tiket_sparepart}/detail`)
-      .then(res => res.json())
-      .then(data => {
-          const status = document.getElementById('statusFilter') ? document.getElementById('statusFilter').value : '';
-          if (status) {
-              data.items = data.items.filter(item => (item.status || '').toString() === status.toString());
-          }
-          showTransaksiDetail(data);
-      })
-      .catch(err => { console.error(err); alert('Gagal mengambil detail!'); });
-}
+            fetch(`/kepalagudang/sparepart/${tiket_sparepart}/detail`)
+                .then(res => res.json())
+                .then(data => {
+                    const status = document.getElementById('statusFilter') ? document.getElementById('statusFilter')
+                        .value : '';
+                    if (status) {
+                        data.items = data.items.filter(item => (item.status || '').toString() === status.toString());
+                    }
+                    showTransaksiDetail(data);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Gagal mengambil detail!');
+                });
+        }
         document.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.btn-edit');
             console.log(editBtn)
@@ -975,12 +983,29 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const kategoriSelect = document.getElementById('kategori');
+            const serialNumberInput = document.getElementById('serialNumber');
             const jenisSelect = document.getElementById('jenisSparepart');
             const tipeSelect = document.getElementById('typeSparepart');
-            const otherFields = document.querySelectorAll(
-                '#sparepartForm select:not(#kategori), #sparepartForm input, #sparepartForm textarea');
+            const vendorSelect = document.getElementById('vendor');
 
+            // Semua field kecuali kategori & serialNumber
+            const otherFields = document.querySelectorAll(
+                '#sparepartForm select:not(#kategori), #sparepartForm input:not(#serialNumber), #sparepartForm textarea'
+            );
+
+            // Fungsi untuk update status Serial Number
+            function updateSerialNumberField(kategori) {
+                if (!kategori || kategori === 'non-aset') {
+                    serialNumberInput.disabled = true;
+                    serialNumberInput.value = '';
+                } else if (kategori === 'aset') {
+                    serialNumberInput.disabled = false;
+                }
+            }
+
+            // Inisialisasi: semua field disabled + serial number disabled
             otherFields.forEach(field => field.disabled = true);
+            updateSerialNumberField(''); // disabled karena belum pilih kategori
 
             if (kategoriSelect) {
                 kategoriSelect.addEventListener('change', function() {
@@ -988,9 +1013,10 @@
 
                     if (kategori) {
                         otherFields.forEach(field => field.disabled = false);
+                        updateSerialNumberField(kategori); // aktifkan/nonaktifkan SN
 
+                        // Filter jenis & tipe
                         let filteredJenis = jenisData.filter(j => j.kategori === kategori);
-
                         jenisSelect.innerHTML = '<option value="" selected>Pilih jenis sparepart</option>';
                         filteredJenis.forEach(j => {
                             const option = document.createElement('option');
@@ -1007,13 +1033,14 @@
                             option.textContent = t.nama;
                             tipeSelect.appendChild(option);
                         });
-
                     } else {
+                        // Jika kategori dikosongkan
                         otherFields.forEach(field => field.disabled = true);
-
+                        updateSerialNumberField(''); // disabled
                         jenisSelect.innerHTML = '<option value="" selected>Pilih jenis sparepart</option>';
                         tipeSelect.innerHTML = '<option value="" selected>Pilih tipe sparepart</option>';
-                        vendorSelect.innerHTML = '<option value="" selected>Pilih vendor</option>';
+                        if (vendorSelect) vendorSelect.innerHTML =
+                            '<option value="" selected>Pilih vendor</option>';
                     }
                 });
             }

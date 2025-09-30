@@ -195,7 +195,7 @@ function showClosedDetail(tiket) {
         .then(data => {
             const permintaan = data.permintaan;
             const pengiriman = data.pengiriman;
-            const attachments = data.pengiriman.attachments || [];
+             const attachments = data?.pengiriman?.attachments || [];
 
             // permintaan
             document.getElementById('modal-tiket-display').textContent = permintaan.tiket ?? tiket;

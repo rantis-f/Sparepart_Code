@@ -187,7 +187,9 @@
                     <hr>
                     <h6 class="fw-bold text-success mb-3"><i class="bi bi-truck"></i> Data Pengiriman</h6>
                     <div class="mb-3">
-                        <p><strong>Tanggal Pengiriman:</strong> <span id="modal-tanggal-pengiriman-display">-</span></p>
+                         <p><strong>Tanggal Pengiriman:</strong> <span id="modal-tanggal-pengiriman-display">-</span></p>
+                        <p><strong>Ekspedisi:</strong> <span id="modal-ekspedisi-display">-</span></p>
+                        <p><strong>Nomor Resi:</strong> <span id="modal-resi-display">-</span></p>
                     </div>
                     <div class="table-responsive mb-4">
                         <table class="table table-bordered">
@@ -313,13 +315,15 @@
                 document.getElementById('modal-requester-display').textContent = '-';
                 document.getElementById('modal-tanggal-request-display').textContent = '-';
                 document.getElementById('modal-tanggal-pengiriman-display').textContent = '-';
+                document.getElementById('modal-ekspedisi-display').textContent = '-';
+                document.getElementById('modal-resi-display').textContent = '-';
 
                 // Reset tabel
                 document.getElementById('request-table-body').innerHTML = '<tr><td colspan="5" class="text-center">Memuat data...</td></tr>';
                 document.getElementById('pengiriman-table-body').innerHTML = '<tr><td colspan="7" class="text-center">Memuat data...</td></tr>';
 
                 // Ambil data dari API
-                fetch(`/kepalagudang/history/${tiket}/api`)
+                fetch(`/kepalagudang/closed-form/${encodeURIComponent(tiket)}/detail`)
                     .then(response => {
                         if (!response.ok) {
                             return response.json().then(errData => {
@@ -329,6 +333,10 @@
                         return response.json();
                     })
                     .then(data => {
+                        const permintaan = data.permintaan;
+            const pengiriman = data?.pengiriman;
+            const attachments = data?.pengiriman?.attachments || [];
+
                         // Isi data request
                         document.getElementById('modal-tiket-display').textContent = data.permintaan.tiket;
                         document.getElementById('modal-requester-display').textContent = data.permintaan.user?.name || 'User';
@@ -359,6 +367,9 @@
                             document.getElementById('modal-tanggal-pengiriman-display').textContent = new Date(data.pengiriman.tanggal_transaksi)
                                 .toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
+                document.getElementById('modal-ekspedisi-display').textContent = data.pengiriman.ekspedisi ?? '-';
+                document.getElementById('modal-resi-display').textContent = data.pengiriman.no_resi ?? '-';
+
                             const pengirimanTableBody = document.getElementById('pengiriman-table-body');
                             pengirimanTableBody.innerHTML = '';
                             if (data.pengiriman.details && data.pengiriman.details.length > 0) {
@@ -378,9 +389,46 @@
                             } else {
                                 pengirimanTableBody.innerHTML = '<tr><td colspan="7" class="text-center">Tidak ada data pengiriman.</td></tr>';
                             }
+                             const buktiPengirimanEl = document.getElementById('bukti-pengiriman-preview');
+                const buktiPenerimaanEl = document.getElementById('bukti-penerimaan-preview');
+                buktiPengirimanEl.innerHTML = '';
+                buktiPenerimaanEl.innerHTML = '';
+
+                // coba cari type 'img_gudang' dan 'img_user' (atau sesuaikan type Anda)
+                const imgGudang = attachments.find(a => a.type === 'img_gudang') || attachments[0] || null;
+                const imgUser = attachments.find(a => a.type === 'img_user') || null;
+                console.log(imgGudang)
+
+                if (imgGudang && imgGudang.url) {
+                    buktiPengirimanEl.innerHTML = `<div class="text-center">
+                        <a href="${imgGudang.url}" target="_blank">
+                            <img src="${imgGudang.url}" class="img-fluid rounded border" style="max-height:300px" alt="${imgGudang.filename}">
+                        </a>
+                        <p class="mt-2 small text-muted">${imgGudang.filename}</p>
+                    </div>`;
+                } else {
+                    buktiPengirimanEl.innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti pengiriman</p></div>`;
+                }
+
+                if (imgUser && imgUser.url) {
+                    buktiPenerimaanEl.innerHTML = `<div class="text-center">
+                        <a href="${imgUser.url}" target="_blank">
+                            <img src="${imgUser.url}" class="img-fluid rounded border" style="max-height:300px" alt="${imgUser.filename}">
+                        </a>
+                        <p class="mt-2 small text-muted">${imgUser.filename}</p>
+                    </div>`;
+                } else {
+                    buktiPenerimaanEl.innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti penerimaan</p></div>`;
+                }
+                            
+                            
                         } else {
                             document.getElementById('modal-tanggal-pengiriman-display').textContent = '-';
-                            document.getElementById('pengiriman-table-body').innerHTML = '<tr><td colspan="7" class="text-center">Belum ada pengiriman.</td></tr>';
+                document.getElementById('modal-ekspedisi-display').textContent = '-';
+                document.getElementById('modal-resi-display').textContent = '-';
+                document.getElementById('pengiriman-table-body').innerHTML = '<tr><td colspan="7" class="text-center">Belum ada data pengiriman.</td></tr>';
+                document.getElementById('bukti-pengiriman-preview').innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti pengiriman</p></div>`;
+                document.getElementById('bukti-penerimaan-preview').innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti penerimaan</p></div>`;
                         }
 
                         // Buka modal
