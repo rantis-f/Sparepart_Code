@@ -146,7 +146,7 @@
                             <th>Nama</th>
                             <th>Email</th>
                             <th>Role</th>
-                            <th>Bagian</th>
+                            <th>Jabatan</th>
                             <th>RO</th>
                             <th>Atasan</th>
                             <th>Joined</th>
@@ -267,9 +267,9 @@
                             <label for="region" class="form-label">Regional Office (RO)</label>
                             <select class="form-select" name="region" id="region">
                                 <option value="">Pilih RO</option>
-                                <option value="JKT">RO Jakarta</option>
-                                <option value="BGD">RO Bandung</option>
-                                <option value="Pusat">Pusat</option>
+                                @foreach ($regions as $r)
+                                    <option value="{{ $r->kode_region }}">{{ $r->nama_region}}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="mb-3">

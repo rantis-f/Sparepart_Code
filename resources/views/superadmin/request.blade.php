@@ -7,33 +7,31 @@
     <!-- Filter Card -->
     <div class="card mb-4">
         <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label for="statusFilter" class="form-label">Status</label>
-                    <select class="form-select" id="statusFilter">
-                        <option value="">Semua Status</option>
-                        <option value="pending">Menunggu</option>
-                        <option value="approved">Disetujui</option>
-                        <option value="rejected">Ditolak</option>
-                    </select>
+            <form method="GET" action="{{ route('superadmin.request.index') }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="start_date" class="form-label">Dari Tanggal</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date"
+                            value="{{ request('start_date') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="end_date" class="form-label">Sampai Tanggal</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date"
+                            value="{{ request('end_date') }}">
+                    </div>
+                    <div class="col-md-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-filter me-1"></i> Terapkan Filter
+                        </button>
+                        <a href="{{ route('superadmin.request.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Reset
+                        </a>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <label for="dateFilter" class="form-label">Tanggal</label>
-                    <input type="date" class="form-control" id="dateFilter">
-                </div>
-                <div class="col-md-4">
-                    <label for="searchFilter" class="form-label">Pencarian</label>
-                    <input type="text" class="form-control" id="searchFilter"
-                        placeholder="Cari ID Request, Requester, atau Barang...">
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-primary w-100">Terapkan Filter</button>
-                </div>
-            </div>
+            </form>
         </div>
-    </div>
+    </div>>
 
-    <!-- Stats Cards (Opsional - bisa dihapus jika tidak perlu) -->
     @if ($requests->count() > 0)
         <div class="row g-3 mb-4">
             <div class="col-md-4">
@@ -44,14 +42,14 @@
                         </div>
                         <div>
                             <h6 class="mb-0">Total Request</h6>
-                            <h4 class="mb-0 fw-bold text-info">{{ $requests->total() }}</h4>
+                            <h4 class="mb-0 fw-bold text-info">{{ $totalRequests }}</h4>
                         </div>
                     </div>
                 </div>
             </div>
-            
         </div>
     @endif
+
 
     <!-- Table -->
     <div class="card shadow-sm">

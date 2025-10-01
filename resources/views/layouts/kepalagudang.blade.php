@@ -577,7 +577,7 @@
                 </div>
                 <div class="user-details">
                     <p class="user-name mb-0">{{ Auth::user()->name }}</p>
-                    <small class="user-role">Kepala Gudang</small>
+                    <small class="user-role">Warehouse Head</small>
                 </div>
             </a>
 

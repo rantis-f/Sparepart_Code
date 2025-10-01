@@ -53,7 +53,7 @@ class KepalaGudangController extends Controller
                 ];
             })->sortByDesc('tiket_sparepart')->values();
 
-            $totalMasuk = $groups->sum('total_qty');
+            $totalMasuk = $groups->count();
         }
 
         // --- Barang Keluar ---
@@ -80,20 +80,12 @@ class KepalaGudangController extends Controller
 
 
 
-        $totalKeluar = Pengiriman::with(['details', 'permintaan'])
-    ->whereHas('permintaan', function ($query) use ($date) {
-        $query->whereDate('tanggal_perubahan', $date)
-              ->where('status_super_admin', 'approved');
-    })
-    ->get()
-    ->flatMap(function ($pengiriman) {
-        return $pengiriman->details;
-    })
-    ->sum('jumlah');
+        $totalKeluar = $detailKeluar->count();
 
-            $totalTransaksi= Permintaan::whereDate('tanggal_perubahan', $date)
-                          ->where('status_super_admin', 'approved')
-                          ->count();
+
+        $totalTransaksi = Permintaan::whereDate('tanggal_perubahan', $date)
+            ->where('status_super_admin', 'approved')
+            ->count();
 
         $totalPending = Permintaan::where('status_gudang', 'on progres')
             ->count();
@@ -140,38 +132,38 @@ class KepalaGudangController extends Controller
 
 
 
-public function historyIndex(Request $request)
-{
-    $query = Permintaan::with(['user', 'details'])
+    public function historyIndex(Request $request)
+    {
+        $query = Permintaan::with(['user', 'details'])
             ->where('status_gudang', '!=', 'pending');
 
 
-    // 🔹 Filter berdasarkan status
-    if ($request->filled('status')) {
-        $status = $request->status;
-        if ($status === 'disetujui') {
-            $query->where('status_gudang', 'approved');
-        } elseif ($status === 'ditolak') {
-            $query->where('status_gudang', 'rejected');
-        } elseif ($status === 'diproses') {
-            $query->where('status_gudang', 'on progres');
-        } elseif ($status === 'dikirim') {
-            $query->whereHas('pengiriman'); // jika ada relasi pengiriman
+        // 🔹 Filter berdasarkan status
+        if ($request->filled('status')) {
+            $status = $request->status;
+            if ($status === 'disetujui') {
+                $query->where('status_gudang', 'approved');
+            } elseif ($status === 'ditolak') {
+                $query->where('status_gudang', 'rejected');
+            } elseif ($status === 'diproses') {
+                $query->where('status_gudang', 'on progres');
+            } elseif ($status === 'dikirim') {
+                $query->whereHas('pengiriman'); // jika ada relasi pengiriman
+            }
         }
+
+        // 🔹 Filter berdasarkan tanggal
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $query->whereBetween('tanggal_permintaan', [
+                $request->date_from,
+                $request->date_to
+            ]);
+        }
+
+        $requests = $query->orderBy('id', 'desc')->get();
+
+        return view('kepalagudang.history', compact('requests'));
     }
-
-    // 🔹 Filter berdasarkan tanggal
-    if ($request->filled('date_from') && $request->filled('date_to')) {
-        $query->whereBetween('tanggal_permintaan', [
-            $request->date_from,
-            $request->date_to
-        ]);
-    }
-
-    $requests = $query->orderBy('id', 'desc')->get();
-
-    return view('kepalagudang.history', compact('requests'));
-}
     public function historyDetailApi($tiket)
     {
         $permintaan = Permintaan::with(['user', 'details'])

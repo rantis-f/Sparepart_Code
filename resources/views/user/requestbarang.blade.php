@@ -18,15 +18,15 @@
         <!-- Filter -->
         <form method="GET" action="{{ route('request.barang.index') }}" class="mb-4 flex flex-wrap gap-3 items-end">
             <!-- Status -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Status</label>
-                <select name="status" class="border-gray-300 rounded-md shadow-sm text-sm">
-                    <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="diterima" {{ request('status') == 'diterima' ? 'selected' : '' }}>Diterima</option>
-                    <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                </select>
-            </div>
+{{-- <div>
+    <label class="block text-sm font-medium text-gray-700">Status</label>
+    <select name="status" class="border-gray-300 rounded-md shadow-sm text-sm">
+        <option value="" {{ request('status') == '' ? 'selected' : '' }}>Semua Status</option>
+        <option value="on_progres" {{ request('status') == 'on_progres' ? 'selected' : '' }}>On Progres</option>
+        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+    </select>
+</div> --}}
 
             <!-- Range Tanggal -->
             <div>
@@ -36,8 +36,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">Sampai</label>
-                <input type="date" name="end_date" value="{{ request('start_date') }}"
-                    class="border-gray-300 rounded-md shadow-sm text-sm">
+              <input type="date" name="end_date" value="{{ request('end_date') }}"                    class="border-gray-300 rounded-md shadow-sm text-sm">
             </div>
 
             <!-- Tombol Filter -->
@@ -65,58 +64,59 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($permintaans as $index => $p)
-                            <tr class="ticket-row hover:bg-gray-50 cursor-pointer transition-colors">
-                                <td class="px-4 py-3 text-sm">{{ $index + 1 }}</td>
-                                <td class="px-4 py-3 text-sm font-medium text-blue-600">{{ $p->tiket }}</td>
-                                <td class="px-4 py-3 text-sm">
-                                    {{ \Carbon\Carbon::parse($p->tanggal_permintaan)->translatedFormat('l, d F Y') }}</td>
-                                <td class="px-4 py-3 text-sm">
-                                    <div class="flex items-center space-x-2">
-                                        @php
-                                            $statuses = [$p->status_ro, $p->status_gudang, $p->status_admin, $p->status_super_admin];
-                                            $allApproved = !in_array(null, $statuses) && !in_array('pending', $statuses) && !in_array('on progres', $statuses) && !in_array('rejected', $statuses);
-                                            $anyRejected = in_array('rejected', $statuses);
-                                            $finalStatus = $anyRejected ? 'ditolak' : ($allApproved ? 'diterima' : 'on progres');
-                                        @endphp
+                  <tbody>
+    @forelse($permintaans as $index => $p)
+        @php
+            $statuses = [$p->status_ro, $p->status_gudang, $p->status_admin, $p->status_super_admin];
+            $allApproved = !in_array(null, $statuses) && 
+                           !in_array('pending', $statuses) && 
+                           !in_array('on progres', $statuses) && 
+                           !in_array('rejected', $statuses);
+            $anyRejected = in_array('rejected', $statuses);
+            $finalStatus = $anyRejected ? 'ditolak' : ($allApproved ? 'diterima' : 'on progres');
 
-                                        @if ($finalStatus === 'diterima')
-                                            <span
-                                                class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Diterima</span>
-                                        @elseif ($finalStatus === 'ditolak')
-                                            <span
-                                                class="inline-flex items-center px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Ditolak</span>
-                                        @else
-                                            <span
-                                                class="inline-flex items-center px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">On
-                                                progres</span>
-                                        @endif
+            // 🔹 Skip jika bukan on progres
+            if ($finalStatus !== 'on progres') {
+                continue;
+            }
+        @endphp
 
-                                        <!-- Ikon Mata untuk Detail Approval -->
-                                        <button type="button" onclick="showStatusDetailModal('{{ $p->tiket }}', 'user')"
-                                            class="text-blue-600 hover:text-blue-800 focus:outline-none"
-                                            title="Lihat detail progres approval">
-                                            <i class="fas fa-eye text-sm"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-sm">
-                                    <button onclick="showDetail('{{ $p->tiket }}')"
-                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                        <i class="fas fa-eye me-1"></i> Detail
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500">
-                                    <i class="fas fa-inbox fa-3x text-gray-400 block mb-3"></i>
-                                    <p>Belum ada history request</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
+        <tr class="ticket-row hover:bg-gray-50 cursor-pointer transition-colors">
+            <td class="px-4 py-3 text-sm">{{ $index + 1 }}</td>
+            <td class="px-4 py-3 text-sm font-medium text-blue-600">{{ $p->tiket }}</td>
+            <td class="px-4 py-3 text-sm">
+                {{ \Carbon\Carbon::parse($p->tanggal_permintaan)->translatedFormat('l, d F Y') }}
+            </td>
+            <td class="px-4 py-3 text-sm">
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                        On Progres
+                    </span>
+
+                    <!-- Ikon Mata untuk Detail Approval -->
+                    <button type="button" onclick="showStatusDetailModal('{{ $p->tiket }}', 'user')"
+                        class="text-blue-600 hover:text-blue-800 focus:outline-none"
+                        title="Lihat detail progres approval">
+                        <i class="fas fa-eye text-sm"></i>
+                    </button>
+                </div>
+            </td>
+            <td class="px-4 py-3 text-sm">
+                <button onclick="showDetail('{{ $p->tiket }}')"
+                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    <i class="fas fa-eye me-1"></i> Detail
+                </button>
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500">
+                <i class="fas fa-inbox fa-3x text-gray-400 block mb-3"></i>
+                <p>Tidak ada request dalam proses.</p>
+            </td>
+        </tr>
+    @endforelse
+</tbody>
                 </table>
             </div>
 

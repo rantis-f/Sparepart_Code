@@ -10,7 +10,7 @@ class Region extends Model
     use HasFactory;
     protected $table = 'region';
     public $timestamps = false;
-    protected $primaryKey = 'id_region';
+    protected $primaryKey = 'id';
     protected $keyType = 'int';
 
     protected $fillable = [

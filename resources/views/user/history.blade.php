@@ -15,31 +15,44 @@
     </div>
 
     <!-- Filter Section -->
-    <div class="filter-card mb-4">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Status</label>
-                <select class="form-select" id="statusFilter">
-                    <option value="">Semua Status</option>
-                    <option value="dikirim">Dikirim</option>
-                    <option value="diterima">Diterima</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Tanggal</label>
-                <input type="date" class="form-control" id="dateFilter">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Pencarian</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="searchFilter" placeholder="Cari ID Request...">
-                    <button class="btn btn-primary" type="button">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
+   <form method="GET" action="{{ route('history.index') }}" class="filter-card mb-4">
+    <div class="row g-3">
+        <!-- Filter Status -->
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Status</label>
+            <select class="form-select" name="statusFilter">
+                <option value="">Semua Status</option>
+                <option value="close" {{ request('statusFilter') == 'close' ? 'selected' : '' }}>Close</option>
+                <option value="diterima" {{ request('statusFilter') == 'diterima' ? 'selected' : '' }}>Diterima</option>
+                <option value="rejected" {{ request('statusFilter') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+            </select>
+        </div>
+
+        <!-- Tanggal Awal -->
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Tanggal Awal</label>
+            <input type="date" class="form-control" name="start_date" value="{{ request('start_date') }}">
+        </div>
+
+        <!-- Tanggal Akhir -->
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Tanggal Akhir</label>
+            <input type="date" class="form-control" name="end_date" value="{{ request('end_date') }}">
+        </div>
+
+        <!-- Tombol Terapkan & Reset -->
+        <div class="col-md-3 d-flex align-items-end">
+            <div class="d-grid gap-2 d-flex">
+                <button type="submit" class="btn btn-primary px-3">
+                    <i class="bi bi-funnel me-1"></i> Terapkan
+                </button>
+                <a href="{{ route('history.index') }}" class="btn btn-light px-3">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </a>
             </div>
         </div>
     </div>
+</form>
 
     <!-- Request List -->
     <div class="card">
@@ -65,11 +78,28 @@
                                 </td>
                                 <td class="px-4 py-3 text-sm">
                                     <div class="flex items-center space-x-2">
-                                        @if($req?->pengiriman?->status == 'diterima')
-                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Diterima</span>
-                                        @else
-                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Close</span>
-                                        @endif
+                                       @php
+$status = '';
+$bg = '';
+
+if ($req->pengiriman?->status === 'close') {
+    $status = 'Close';
+    $bg = 'bg-green-100 text-green-800';
+} elseif ($req->status_super_admin === 'rejected') {
+    $status = 'Ditolak';
+    $bg = 'bg-red-100 text-red-800';
+} else {
+    $status = 'Diterima';
+    $bg = 'bg-gray-100 text-gray-800';
+}
+@endphp
+
+<span 
+    class="inline-flex items-center px-2 py-1 text-xs font-medium {{ $bg }} rounded-full"
+    data-status-badge
+    data-status="{{ $req->status_barang }}">
+    {{ $status }}
+</span>
 
                                         <button 
                                             type="button"
@@ -231,9 +261,10 @@
         </div>
     </div>
 
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // per-tiket cache & pending promises
+    // Tetap pertahankan cache dan fungsi modal
     window.requestCache = window.requestCache || {};
     window.requestPromises = window.requestPromises || {};
 
@@ -249,7 +280,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return perm.catatan_final ?? perm.catatan_super_admin ?? perm.catatan_admin ?? perm.catatan_gudang ?? perm.catatan_ro ?? null;
     }
 
-    // Fetch once per tiket, dedupe concurrent calls and cache result
     function getTicketData(tiket) {
         if (window.requestCache[tiket]) return Promise.resolve(window.requestCache[tiket]);
         if (window.requestPromises[tiket]) return window.requestPromises[tiket];
@@ -292,7 +322,6 @@ document.addEventListener('DOMContentLoaded', function () {
             ? new Date(perm.tanggal_permintaan).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
             : '-';
 
-        // permintaan details
         const reqBody = document.getElementById('request-table-body');
         reqBody.innerHTML = '';
         (perm.details || []).forEach((it, i) => {
@@ -307,7 +336,6 @@ document.addEventListener('DOMContentLoaded', function () {
             reqBody.appendChild(tr);
         });
 
-        // pengiriman
         if (peng) {
             document.getElementById('modal-tanggal-pengiriman-display').textContent = peng.tanggal_transaksi
                 ? new Date(peng.tanggal_transaksi).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -330,7 +358,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 pengBody.appendChild(tr);
             });
 
-            // attachments preview
             const attachments = peng.attachments || [];
             document.getElementById('bukti-pengiriman-preview').innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti pengiriman</p></div>`;
             document.getElementById('bukti-penerimaan-preview').innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti penerimaan</p></div>`;
@@ -363,11 +390,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // tombol Detail: gunakan getTicketData
+    // Tombol Detail
     document.querySelectorAll('.btn-detail').forEach(btn => {
         btn.addEventListener('click', function () {
             const tiket = this.dataset.tiket;
-            // placeholder saat loading
             document.getElementById('modal-tiket-display').textContent = '-';
             document.getElementById('modal-requester-display').textContent = '-';
             document.getElementById('modal-tanggal-request-display').textContent = '-';
@@ -390,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // status modal reuse same cached data
+    // Modal status
     window.showStatusDetailModal = function (tiket, userRole) {
         getTicketData(tiket)
             .then(payload => {
@@ -418,12 +444,95 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     };
 
-    // simple search
-    document.getElementById('searchFilter')?.addEventListener('keyup', function () {
-        const q = this.value.toLowerCase();
-        document.querySelectorAll('tbody tr').forEach(r => {
-            r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    // 🔁 FUNGSI UTAMA: Apply Semua Filter
+    function applyFilters() {
+        const statusFilter = document.getElementById('statusFilter')?.value;
+        const dateFrom = document.getElementById('dateFromFilter')?.value;
+        const dateTo = document.getElementById('dateToFilter')?.value;
+        const search = document.getElementById('searchFilter')?.value.toLowerCase();
+
+        document.querySelectorAll('tbody tr.ticket-row').forEach(row => {
+            const badge = row.querySelector('[data-status-badge]');
+            const status = badge ? badge.dataset.status : '';
+            const tanggalCellText = row.querySelector('td:nth-child(3)')?.textContent.trim() || ''; // e.g., "Senin, 05 April 2024"
+            const searchContent = row.textContent.toLowerCase();
+
+            // 🔹 Parse tanggal Indonesia ke format YYYY-MM-DD
+            const parsedDate = parseIndonesianDate(tanggalCellText);
+            if (!parsedDate) return; // skip jika gagal parse
+
+            let show = true;
+
+            // Filter Status
+            if (statusFilter === 'close') show = status === 'close';
+            else if (statusFilter === 'rejected') show = status === 'rejected';
+
+            // Filter Rentang Tanggal
+            if (dateFrom) show = show && parsedDate >= dateFrom;
+            if (dateTo) show = show && parsedDate <= dateTo;
+
+            // Filter Pencarian
+            if (search) show = show && searchContent.includes(search);
+
+            row.style.display = show ? '' : 'none';
         });
+    }
+
+    // 🔹 Fungsi bantu: konversi "Senin, 05 April 2024" → "2024-04-05"
+    function parseIndonesianDate(indoText) {
+        const dayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        const monthNames = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+
+        try {
+            // Hapus nama hari jika ada
+            let datePart = indoText.replace(/^[^,]+,\s*/, '').trim(); // hasil: "05 April 2024"
+
+            const parts = datePart.split(' ');
+            if (parts.length !== 3) return null;
+
+            const day = parseInt(parts[0], 10);
+            const monthIndex = monthNames.indexOf(parts[1]);
+            const year = parseInt(parts[2], 10);
+
+            if (isNaN(day) || monthIndex === -1 || isNaN(year)) return null;
+
+            // Buat objek Date dan format ke ISO string (YYYY-MM-DD)
+            const date = new Date(year, monthIndex, day);
+            if (date.getDate() !== day) return null; // validasi tanggal
+
+            return date.toISOString().split('T')[0]; // output: YYYY-MM-DD
+        } catch (e) {
+            console.error('Error parsing date:', e);
+            return null;
+        }
+    }
+
+    // 🎯 Event: Terapkan Filter saat tombol diklik
+    document.getElementById('applyFilter')?.addEventListener('click', function () {
+        const from = document.getElementById('dateFromFilter').value;
+        const to = document.getElementById('dateToFilter').value;
+
+        // Validasi rentang tanggal
+        if (from && to && to < from) {
+            alert('Tanggal akhir tidak boleh lebih awal dari tanggal awal.');
+            document.getElementById('dateToFilter').value = '';
+            return;
+        }
+
+        applyFilters();
+    });
+
+    // 🔁 Reset Filter
+    document.getElementById('resetFilter')?.addEventListener('click', function () {
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('dateFromFilter').value = '';
+        document.getElementById('dateToFilter').value = '';
+        document.getElementById('searchFilter').value = '';
+
+        applyFilters();
     });
 });
 </script>

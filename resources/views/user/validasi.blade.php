@@ -14,32 +14,6 @@
         </div>
     </div>
 
-    <!-- Filter Section -->
-    <div class="filter-card mb-4">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Status</label>
-                <select class="form-select" id="statusFilter">
-                    <option value="">Semua Status</option>
-                    <option value="dikirim">Dikirim</option>
-                    <option value="diterima">Diterima</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Tanggal</label>
-                <input type="date" class="form-control" id="dateFilter">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Pencarian</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="searchFilter" placeholder="Cari ID Request...">
-                    <button class="btn btn-primary" type="button">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Request List -->
     <div class="card">

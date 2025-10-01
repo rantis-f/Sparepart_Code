@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use App\Models\Permintaan;
 use App\Models\Pengiriman;
+use App\Models\Region;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,27 +38,8 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
-        // Ambil daftar region yang valid dan tidak kosong
-        $regions = User::select('region')
-            ->distinct()
-            ->whereNotNull('region')  // Menghindari region kosong
-            ->pluck('region');
+        $regions = Region::all();
 
-        // Terapkan filter region jika ada
-        if ($request->filled('region')) {
-            $query->where('region', $request->region);
-        }
-
-        // Terapkan filter search jika ada
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        // Ambil data user dengan filter yang diterapkan
         $users = $query
             ->orderBy('role', 'asc')
             ->orderBy('created_at', 'desc')
@@ -193,40 +175,47 @@ class UserController extends Controller
     {
         $user = auth()->user();
 
-        $query = Permintaan::with([
-            'details',
-            'pengiriman' => function ($q) {
-                $q->select('id', 'tiket_permintaan', 'status')
-                    ->whereIn('status', ['diterima', 'close']);
-            },
-            'pengiriman.details',
-        ])
-            ->where('user_id', $user->id)
-            ->where(function (Builder $q) {
-                $q->whereHas('pengiriman', function (Builder $q2) {
-                    $q2->whereIn('status', ['diterima', 'close']);
-                })
-                ->orWhere('status_super_admin', 'rejected');
-            })
-            ->orderBy('id', 'desc');
+$query = Permintaan::with([
+    'details',
+    'pengiriman' => function ($q) {
+        $q->select('id', 'tiket_permintaan', 'status')
+            ->whereIn('status', ['diterima', 'close']);
+    },
+    'pengiriman.details',
+])
+->where('user_id', $user->id)
+->where(function (Builder $q) {
+    $q->whereHas('pengiriman', function (Builder $q2) {
+        $q2->whereIn('status', ['diterima', 'close']);
+    })
+   ->orWhere('status_super_admin', 'rejected');
+})
+->orderBy('id', 'desc');
 
 
-        // Filter berdasarkan status
         if ($request->filled('statusFilter')) {
-            $status = $request->statusFilter;
-            if ($status === 'close') {
-                $query->pengiriman->where('status', '!=', 'close');
-            } elseif ($status === 'diterima') {
-                $query->pengiriman->where('status', '!=', 'diterima');
-            }
-        }
+    $status = $request->statusFilter;
 
-        // Filter berdasarkan tanggal
-        if ($request->filled('dateFilter')) {
-            $query->whereDate('tanggal_permintaan', $request->dateFilter);
-        }
+    if (in_array($status, ['close', 'diterima', 'rejected'])) {
+        $query->where(function ($q) use ($status) {
+            $q->whereHas('pengiriman', function ($q2) use ($status) {
+                $q2->where('status', $status);
+            })
+            ->orWhere('status_super_admin', $status);
+        });
+    }
+}
 
-        $requests = $query->get();
+
+    // Filter berdasarkan tanggal permintaan
+    if ($request->filled('start_date')) {
+        $query->whereDate('tanggal_permintaan', '>=', $request->start_date);
+    }
+    if ($request->filled('end_date')) {
+        $query->whereDate('tanggal_permintaan', '<=', $request->end_date);
+    }
+
+    $requests = $query->orderBy('id', 'desc')->get();
 
         return view('user.history', compact('requests'));
     }
