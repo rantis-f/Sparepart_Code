@@ -33,10 +33,20 @@ class UserController extends Controller
         // Mulai query untuk ambil data user
         $query = User::query();
 
-        // Terapkan filter role jika ada
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
+          if ($request->filled('region')) {
+        $query->where('region', $request->region);
+    }
+
+        if ($request->filled('search')) {
+        $searchTerm = $request->search;
+        $query->where(function ($q) use ($searchTerm) {
+            $q->where('name', 'like', "%{$searchTerm}%")
+              ->orWhere('email', 'like', "%{$searchTerm}%");
+        });
+    }
 
         $regions = Region::all();
 
@@ -44,7 +54,7 @@ class UserController extends Controller
             ->orderBy('role', 'asc')
             ->orderBy('created_at', 'desc')
             ->paginate(10)
-            ->withQueryString();  // Menjaga query string di URL
+            ->withQueryString(); 
 
         // Kirim data ke view
         return view('kepalagudang.datauser', compact('users', 'roles', 'regions', 'roleLabels'));
@@ -59,7 +69,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|numeric|in:1,2,3,4',
-            'bagian' => 'nullable|string|max:255',
+            'jabatan' => 'nullable|string|max:255',
             'atasan' => 'nullable|string|max:255',
             'region' => 'nullable|string|max:255',
         ]);
@@ -70,7 +80,7 @@ class UserController extends Controller
             'password' => bcrypt($request->password),
             'role' => $request->role,
             'region' => $request->region,
-            'bagian' => $request->bagian,
+            'bagian' => $request->jabatan,
             'atasan' => $request->atasan,
         ]);
 
@@ -90,6 +100,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
             'role' => 'required|numeric|in:1,2,3,4',
+            'jabatan' => 'nullable|string|max:255',
             'region' => 'nullable|string|max:255',
             'atasan' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8|confirmed',
@@ -103,6 +114,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
+            'bagian' => $request->jabatan,
             'region' => $request->region,
             'atasan' => $request->atasan,
         ];
@@ -205,7 +217,6 @@ $query = Permintaan::with([
         });
     }
 }
-
 
     // Filter berdasarkan tanggal permintaan
     if ($request->filled('start_date')) {

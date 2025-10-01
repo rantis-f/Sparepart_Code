@@ -3,65 +3,7 @@
 @section('title', 'Manajemen Data User')
 @section('page_title', 'Manajemen Data User')
 
-@push('styles')
-    <style>
-        .password-container {
-            position: relative;
-        }
 
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 38px;
-            cursor: pointer;
-            color: #6c757d;
-            z-index: 5;
-            background: white;
-            padding: 0 5px;
-        }
-
-        /* Tuning ukuran tabel & action buttons */
-        .table.table-hover th,
-        .table.table-hover td {
-            padding: 0.45rem 0.6rem;
-            /* lebih compact */
-            vertical-align: middle;
-        }
-
-        /* Buat kolom aksi lebih sempit dan mencegah wrapping */
-        .table.table-hover th.action-col,
-        .table.table-hover td.action-col {
-            width: 125px;
-            white-space: nowrap;
-        }
-
-        /* Konsistenkan ukuran tombol aksi kecil */
-        .btn-action {
-            padding: 0.25rem 0.45rem;
-            font-size: 0.85rem;
-            line-height: 1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 36px;
-            height: 32px;
-            border-radius: 6px;
-        }
-
-        /* Ikon dalam tombol sedikit lebih kecil agar proporsional */
-        .btn-action i {
-            font-size: 1rem;
-        }
-
-        /* Untuk varian kecil (opsional, ketika menggunakan btn-sm) */
-        .btn-action.btn-sm {
-            padding: 0.2rem 0.35rem;
-            min-width: 34px;
-            height: 30px;
-            font-size: 0.82rem;
-        }
-    </style>
-@endpush
 @section('content')
     <input type="hidden" name="_token" id="csrf_token" value="{{ csrf_token() }}">
     <div class="page-header">
@@ -90,7 +32,7 @@
                     <div class="col-md-4">
                         <label for="roleFilter" class="form-label">Role</label>
                         <select class="form-select" id="roleFilter" name="role">
-                            <option value="">Semua Role</option> <!-- Ini memastikan role tidak terpilih otomatis -->
+                            <option value="">Semua Role</option>
                             @foreach ($roles as $value => $label)
                                 <option value="{{ $value }}"
                                     {{ (string) request('role') === (string) $value ? 'selected' : '' }}>
@@ -105,12 +47,13 @@
                         <label for="regionFilter" class="form-label">Region</label>
                         <select class="form-select" id="regionFilter" name="region">
                             <option value="">Semua Region</option>
-                            @foreach ($regions as $reg)
-                                <option value="{{ $reg }}"
-                                    {{ (string) request('region') === (string) $reg ? 'selected' : '' }}>
-                                    {{ $reg }}
-                                </option>
-                            @endforeach
+                           @foreach ($regions as $region)
+    <option value="{{ $region->kode_region }}"
+        {{ (string) request('region') === (string) $region->kode_region ? 'selected' : '' }}>
+        {{ $region->nama_region }}
+    </option>
+@endforeach
+
                         </select>
                     </div>
 
@@ -173,6 +116,7 @@
                                         <!-- Tombol Edit hanya tampil saat data ada -->
                                         <button class="btn btn-primary btn-action btn-edit" data-id="{{ $user->id }}"
                                             data-name="{{ $user->name }}" data-email="{{ $user->email }}"
+                                            data-jabatan="{{ $user->bagian }}" data-jabatan="{{ $user->bagian }}"
                                             data-role="{{ $user->role }}" data-region="{{ $user->region }}"
                                             data-atasan="{{ $user->atasan }}" data-bs-toggle="modal"
                                             data-bs-target="#editUserModal">
@@ -225,7 +169,6 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        @csrf
                         @if ($errors->any())
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
@@ -237,30 +180,53 @@
                         @endif
                         <div class="mb-3">
                             <label for="name" class="form-label">Nama</label>
-                            <input type="text" name="name" class="form-control" id="name" required>
+                            <input type="text" name="name" class="form-control" id="name" required
+                                value="{{ old('name') }}">
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control" id="email" required>
+                            <input type="email" name="email" class="form-control" id="email" required
+                                value="{{ old('email') }}">
                         </div>
+                        <div class="mb-3">
+                            <label for="jabatan" class="form-label">Jabatan</label>
+                            <input type="text" name="jabatan" class="form-control" id="jabatan" required
+                                value="{{ old('jabatan') }}">
+                        </div>
+
+                        <!-- Password Field with Toggle -->
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control" id="password" required>
+                            <div class="input-group">
+                                <input type="password" name="password" class="form-control" id="password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                         </div>
+
+                        <!-- Password Confirmation Field with Toggle -->
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
-                            <input type="password" name="password_confirmation" class="form-control"
-                                id="password_confirmation" required>
+                            <div class="input-group">
+                                <input type="password" name="password_confirmation" class="form-control"
+                                    id="password_confirmation" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordConfirmation">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="role" class="form-label">Role</label>
                             <select class="form-select" name="role" id="role" required>
                                 <option value="">Pilih Role</option>
-                                <option value="1">Superadmin</option>
-                                <option value="2">Regional Office Head</option>
-                                <option value="3">Warehouse Head</option>
-                                <option value="4">Field Technician</option>
+                                <option value="1" {{ old('role') == '1' ? 'selected' : '' }}>Superadmin</option>
+                                <option value="2" {{ old('role') == '2' ? 'selected' : '' }}>Regional Office Head
+                                </option>
+                                <option value="3" {{ old('role') == '3' ? 'selected' : '' }}>Warehouse Head</option>
+                                <option value="4" {{ old('role') == '4' ? 'selected' : '' }}>Field Technician
+                                </option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -268,13 +234,17 @@
                             <select class="form-select" name="region" id="region">
                                 <option value="">Pilih RO</option>
                                 @foreach ($regions as $r)
-                                    <option value="{{ $r->kode_region }}">{{ $r->nama_region}}</option>
+                                    <option value="{{ $r->kode_region }}"
+                                        {{ old('region') == $r->kode_region ? 'selected' : '' }}>
+                                        {{ $r->nama_region }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="atasan" class="form-label">Atasan</label>
-                            <input type="text" name="atasan" class="form-control" id="atasan" required>
+                            <input type="text" name="atasan" class="form-control" id="atasan" required
+                                value="{{ old('atasan') }}">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -286,6 +256,51 @@
         </div>
     </div>
 
+
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle untuk password
+            const togglePassword = document.getElementById('togglePassword');
+            const password = document.getElementById('password');
+
+            togglePassword.addEventListener('click', function() {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+
+                // Ganti icon
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                } else {
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                }
+            });
+
+            // Toggle untuk konfirmasi password
+            const togglePasswordConfirmation = document.getElementById('togglePasswordConfirmation');
+            const passwordConfirmation = document.getElementById('password_confirmation');
+
+            togglePasswordConfirmation.addEventListener('click', function() {
+                const type = passwordConfirmation.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordConfirmation.setAttribute('type', type);
+
+                // Ganti icon
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                } else {
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                }
+            });
+        });
+    </script>
     <!-- Edit User Modal -->
     @if (isset($user))
         <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel"
@@ -305,36 +320,65 @@
 
                             <div class="mb-3">
                                 <label for="editName" class="form-label">Nama</label>
-                                <input type="text" name="name" class="form-control" id="editName"
+                                <input type="text" name="name"
+                                    class="form-control @error('name') is-invalid @enderror" id="editName"
                                     value="{{ old('name', $user->name) }}" required>
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="editEmail" class="form-label">Email</label>
-                                <input type="email" name="email" class="form-control" id="editEmail"
+                                <input type="email" name="email"
+                                    class="form-control @error('email') is-invalid @enderror" id="editEmail"
                                     value="{{ old('email', $user->email) }}" required>
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Kolom Jabatan yang Ditambahkan -->
+                            <div class="mb-3">
+                                <label for="editJabatan" class="form-label">Jabatan</label>
+                                <input type="text" name="jabatan"
+                                    class="form-control @error('jabatan') is-invalid @enderror" id="editJabatan"
+                                    value="{{ old('jabatan', $user->bagian) }}">
+                                @error('jabatan')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="editPassword" class="form-label">Password Baru (opsional)</label>
-                                <div class="password-container">
-                                    <input type="password" name="password" class="form-control" id="editPassword">
-                                    <i class="bi bi-eye-slash password-toggle" id="toggleEditPassword"></i>
-                                </div>
+                                <div class="input-group">
+                                <input type="password" name="password" class="form-control" id="password">
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="editPasswordConfirmation" class="form-label">Konfirmasi Password Baru</label>
                                 <div class="password-container">
-                                    <input type="password" name="password_confirmation" class="form-control"
-                                        id="editPasswordConfirmation">
-                                    <i class="bi bi-eye-slash password-toggle" id="toggleEditPasswordConfirmation"></i>
+                                    <div class="input-group">
+                                <input type="password" name="password_confirmation" class="form-control"
+                                    id="password_confirmation">
+                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordConfirmation">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="editRole" class="form-label">Role</label>
-                                <select class="form-select" name="role" id="editRole" required>
+                                <select class="form-select @error('role') is-invalid @enderror" name="role"
+                                    id="editRole" required>
                                     <option value="1" {{ old('role', $user->role) == 1 ? 'selected' : '' }}>
                                         Superadmin</option>
                                     <option value="2" {{ old('role', $user->role) == 2 ? 'selected' : '' }}>Regional
@@ -344,25 +388,36 @@
                                     <option value="4" {{ old('role', $user->role) == 4 ? 'selected' : '' }}>Field
                                         Technician</option>
                                 </select>
+                                @error('role')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="editRegion" class="form-label">Regional Office (RO)</label>
-                                <select class="form-select" name="region" id="editRegion">
-                                    <option value="JKT" {{ old('region', $user->region) == 'JKT' ? 'selected' : '' }}>
-                                        RO Jakarta</option>
-                                    <option value="bandung"
-                                        {{ old('region', $user->region) == 'bandung' ? 'selected' : '' }}>RO Bandung
-                                    </option>
-                                    <option value="Pusat"
-                                        {{ old('region', $user->region) == 'Pusat' ? 'selected' : '' }}>Pusat</option>
+                                <select class="form-select @error('region') is-invalid @enderror" name="region"
+                                    id="editRegion">
+                                    <option value="">Pilih RO</option>
+                                    @foreach ($regions as $r)
+                                        <option value="{{ $r->kode_region }}"
+                                            {{ old('region', $user->region) == $r->kode_region ? 'selected' : '' }}>
+                                            {{ $r->nama_region }}
+                                        </option>
+                                    @endforeach
                                 </select>
+                                @error('region')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="editAtasan" class="form-label">Atasan</label>
-                                <input type="text" name="atasan" class="form-control" id="editAtasan"
+                                <input type="text" name="atasan"
+                                    class="form-control @error('atasan') is-invalid @enderror" id="editAtasan"
                                     value="{{ old('atasan', $user->atasan) }}" required>
+                                @error('atasan')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -665,6 +720,7 @@
                     const userId = this.getAttribute('data-id') || '';
                     const name = this.getAttribute('data-name') || '';
                     const email = this.getAttribute('data-email') || '';
+                    const jabatan = this.getAttribute('data-jabatan') || '';
                     const role = this.getAttribute('data-role') || '';
                     const region = this.getAttribute('data-region') || '';
                     const atasan = this.getAttribute('data-atasan') || '';
@@ -681,6 +737,9 @@
 
                     const editRole = document.getElementById('editRole');
                     if (editRole) editRole.value = role;
+
+                    const editJabatan = document.getElementById('editJabatan');
+                    if (editJabatan) editJabatan.value = jabatan;
 
                     const editRegion = document.getElementById('editRegion');
                     if (editRegion) editRegion.value = region;
@@ -753,6 +812,7 @@
                                 editBtn.setAttribute('data-name', updated.name || '');
                                 editBtn.setAttribute('data-email', updated.email || '');
                                 editBtn.setAttribute('data-role', updated.role || '');
+                                editBtn.setAttribute('data-jabatan', updated.jabatan || '');
                                 editBtn.setAttribute('data-region', updated.region || '');
                                 editBtn.setAttribute('data-atasan', updated.atasan || '');
 
