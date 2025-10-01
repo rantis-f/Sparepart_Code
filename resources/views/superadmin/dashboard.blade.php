@@ -17,7 +17,7 @@
                     <i class="bi bi-box-arrow-in-down"></i>
                 </div>
                 <h4 class="stats-number">{{ $totalMasuk ?? 0 }}</h4>
-                <p class="stats-title">Barang Masuk</p>
+                 <p class="stats-title">IN</p>
             </div>
         </div>
         <div class="col-xl-3 col-md-6">
@@ -26,7 +26,7 @@
                     <i class="bi bi-box-arrow-up"></i>
                 </div>
                 <h4 class="stats-number">{{ $totalKeluar ?? 0 }}</h4>
-                <p class="stats-title">Barang Keluar</p>
+                <p class="stats-title">OUT</p>
             </div>
         </div>
         <div class="col-xl-3 col-md-6">
@@ -41,7 +41,7 @@
                 @else
                     <h4 class="stats-number">0</h4>
                 @endif
-                <p class="stats-title">Pending</p>
+                <p class="stats-title">Request Pending</p>
             </div>
         </div>
         <div class="col-xl-3 col-md-6">
@@ -58,13 +58,13 @@
     <div class="row">
         <div class="col-md-6">
             <div class="table-container">
-                <h5><i class="bi bi-box-arrow-in-down me-2"></i>Barang Masuk Terbaru</h5>
+                <h5><i class="bi bi-box-arrow-in-down me-2"></i>Log Sparepart (IN)</h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Barang</th>
+                                <th>Sparepart</th>
                                 <th>Jumlah</th>
                                 <th>Tanggal</th>
                             </tr>
@@ -99,13 +99,13 @@
 
         <div class="col-md-6">
             <div class="table-container">
-                <h5><i class="bi bi-box-arrow-up me-2"></i>Barang Keluar Terbaru</h5>
+                <h5><i class="bi bi-box-arrow-up me-2"></i>Log Sparepart (OUT)</h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Barang</th>
+                                <th>Sparepart</th>
                                 <th>Jumlah</th>
                                 <th>Tanggal</th>
                             </tr>

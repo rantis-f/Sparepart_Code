@@ -12,7 +12,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h4 class="fw-bold mb-0"><i class="bi bi-tools me-2"></i>Daftar Sparepart</h4>
-                <p class="text-muted mb-0">Kelola data sparepart di gudang</p>
+                <p class="text-muted mb-0">Kelola data sparepart di Warehouse</p>
             </div>
             <div>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahSparepartModal">
@@ -266,8 +266,7 @@
                             <div class="col-md-6">
                                 <label for="quantity" class="form-label">Quantity</label>
                                 <input type="number" class="form-control @error('quantity') is-invalid @enderror"
-                                    id="quantity" name="quantity" min="1"
-                                    value="{{ old('quantity', 1) }}">
+                                    id="quantity" name="quantity" min="1" value="{{ old('quantity', 1) }}">
                                 @error('quantity')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -785,34 +784,34 @@
             sparepartDetailModal.show();
         }
 
-function showDetail(tiket_sparepart) {
-    fetch(`/kepalagudang/sparepart/${tiket_sparepart}/detail`)
-        .then(res => res.json())
-        .then(data => {
-            const status = document.getElementById('statusFilter')?.value || '';
-            const tanggalMulai = document.getElementById('tanggalMulai')?.value || '';
-            const tanggalBerakhir = document.getElementById('tanggalBerakhir')?.value || '';
+        function showDetail(tiket_sparepart) {
+            fetch(`/kepalagudang/sparepart/${tiket_sparepart}/detail`)
+                .then(res => res.json())
+                .then(data => {
+                    const status = document.getElementById('statusFilter')?.value || '';
+                    const tanggalMulai = document.getElementById('tanggalMulai')?.value || '';
+                    const tanggalBerakhir = document.getElementById('tanggalBerakhir')?.value || '';
 
-            // Filter status (jika ada)
-            if (status) {
-                data.items = data.items.filter(item => (item.status || '').toString() === status.toString());
-            }
+                    // Filter status (jika ada)
+                    if (status) {
+                        data.items = data.items.filter(item => (item.status || '').toString() === status.toString());
+                    }
 
-            // Filter tanggal (jika ada)
-            if (tanggalMulai && tanggalBerakhir) {
-                data.items = data.items.filter(item => {
-                    const tgl = new Date(item.tanggal);
-                    return tgl >= new Date(tanggalMulai) && tgl <= new Date(tanggalBerakhir);
+                    // Filter tanggal (jika ada)
+                    if (tanggalMulai && tanggalBerakhir) {
+                        data.items = data.items.filter(item => {
+                            const tgl = new Date(item.tanggal);
+                            return tgl >= new Date(tanggalMulai) && tgl <= new Date(tanggalBerakhir);
+                        });
+                    }
+
+                    showTransaksiDetail(data);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Gagal mengambil detail!');
                 });
-            }
-
-            showTransaksiDetail(data);
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Gagal mengambil detail!');
-        });
-}
+        }
 
         document.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.btn-edit');
@@ -1008,28 +1007,28 @@ function showDetail(tiket_sparepart) {
             );
 
             // Fungsi untuk update status Serial Number
- function updateFields(kategori) {
-        if (!kategori) {
-            // Belum pilih kategori → matikan semua
-            serialNumberInput.disabled = true;
-            serialNumberInput.value = '';
-            quantityInput.disabled = true;
-            quantityInput.value = '';
-        } else if (kategori === 'aset') {
-            // Aset: SN aktif, Quantity = 1 & disabled
-            serialNumberInput.disabled = false;
-            quantityInput.value = 1;
-            // quantityInput.disabled = true;  
-            
-        } else if (kategori === 'non-aset') {
-            // Non Aset: SN mati, Quantity bebas
-            serialNumberInput.disabled = true;
-            serialNumberInput.value = '';
-            quantityInput.disabled = false;
-            quantityInput.min = 1;
-            quantityInput.removeAttribute('max');
-        }
-    }
+            function updateFields(kategori) {
+                if (!kategori) {
+                    // Belum pilih kategori → matikan semua
+                    serialNumberInput.disabled = true;
+                    serialNumberInput.value = '';
+                    quantityInput.disabled = true;
+                    quantityInput.value = '';
+                } else if (kategori === 'aset') {
+                    // Aset: SN aktif, Quantity = 1 & disabled
+                    serialNumberInput.disabled = false;
+                    quantityInput.value = 1;
+                    // quantityInput.disabled = true;  
+
+                } else if (kategori === 'non-aset') {
+                    // Non Aset: SN mati, Quantity bebas
+                    serialNumberInput.disabled = true;
+                    serialNumberInput.value = '';
+                    quantityInput.disabled = false;
+                    quantityInput.min = 1;
+                    quantityInput.removeAttribute('max');
+                }
+            }
 
             // Inisialisasi: semua field disabled + serial number disabled
             otherFields.forEach(field => field.disabled = true);

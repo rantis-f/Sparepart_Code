@@ -47,12 +47,12 @@
                         <label for="regionFilter" class="form-label">Region</label>
                         <select class="form-select" id="regionFilter" name="region">
                             <option value="">Semua Region</option>
-                           @foreach ($regions as $region)
-    <option value="{{ $region->kode_region }}"
-        {{ (string) request('region') === (string) $region->kode_region ? 'selected' : '' }}>
-        {{ $region->nama_region }}
-    </option>
-@endforeach
+                            @foreach ($regions as $region)
+                                <option value="{{ $region->kode_region }}"
+                                    {{ (string) request('region') === (string) $region->kode_region ? 'selected' : '' }}>
+                                    {{ $region->nama_region }}
+                                </option>
+                            @endforeach
 
                         </select>
                     </div>
@@ -352,11 +352,11 @@
                             <div class="mb-3">
                                 <label for="editPassword" class="form-label">Password Baru (opsional)</label>
                                 <div class="input-group">
-                                <input type="password" name="password" class="form-control" id="password">
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </div>
+                                    <input type="password" name="password" class="form-control" id="password">
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                                 @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -366,12 +366,13 @@
                                 <label for="editPasswordConfirmation" class="form-label">Konfirmasi Password Baru</label>
                                 <div class="password-container">
                                     <div class="input-group">
-                                <input type="password" name="password_confirmation" class="form-control"
-                                    id="password_confirmation">
-                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordConfirmation">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </div>
+                                        <input type="password" name="password_confirmation" class="form-control"
+                                            id="password_confirmation">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                            id="togglePasswordConfirmation">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 

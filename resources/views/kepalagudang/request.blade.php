@@ -35,8 +35,8 @@
 
 @section('content')
 
-    <h4 class="page-title"><i class="bi bi-cart-check me-2"></i> Daftar Request Barang</h4>
-    <p class="page-subtitle">Kelola permintaan barang yang sudah di-approve Superadmin</p>
+    <h4 class="page-title"><i class="bi bi-cart-check me-2"></i> Daftar Request Sparepart</h4>
+    <p class="page-subtitle">Kelola Request dari Field Technisian</p>
 
     <div class="card mb-4">
         <div class="card-body">
@@ -852,8 +852,8 @@
                         tipe: row.querySelector('.tipe-select')?.value || null,
                         merk: row.querySelector('.merk-select')?.value || null,
                         jenis_id: parseInt(row.querySelector('.jenis-id')?.value) || null,
-tipe_id: parseInt(row.querySelector('.tipe-id')?.value) || null,
-vendor_id: parseInt(row.querySelector('.vendor-id')?.value) || null,
+                        tipe_id: parseInt(row.querySelector('.tipe-id')?.value) || null,
+                        vendor_id: parseInt(row.querySelector('.vendor-id')?.value) || null,
                         sn: sn || null,
                         jumlah,
                         keterangan: keterangan || null

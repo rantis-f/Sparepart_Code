@@ -539,7 +539,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header p-3">
-            <h4 class="text-white"><i class="bi bi-gear-fill"></i> <span>Kepala gudang</span></h4>
+            <h4 class="text-white"><i class="bi bi-gear-fill"></i> <span>Warehouse Head</span></h4>
         </div>
 
         <div class="list-group list-group-flush">
@@ -549,7 +549,7 @@
             </a>
             <a href="{{ route('kepalagudang.request.index') }}"
                 class="list-group-item list-group-item-action py-3 {{ request()->routeIs('kepalagudang.request.*') ? 'active' : '' }}">
-                <i class="bi bi-send"></i> <span>Request / Send</span>
+                <i class="bi bi-send"></i> <span>Kelola Request</span>
             </a>
             <a href="{{ route('kepalagudang.sparepart.index') }}"
                 class="list-group-item list-group-item-action py-3 {{ request()->routeIs('kepalagudang.sparepart.*') ? 'active' : '' }}">
@@ -557,15 +557,15 @@
             </a>
             <a href="{{ route('kepalagudang.data') }}"
                 class="list-group-item list-group-item-action py-3 {{ request()->routeIs('kepalagudang.data') ? 'active' : '' }}">
-                <i class="bi bi-folder2-open"></i> <span>Data</span>
+                <i class="bi bi-folder2-open"></i> <span>Kelola Data</span>
             </a>
             <a href="{{ route('kepalagudang.history.index') }}"
                 class="list-group-item list-group-item-action py-3 {{ request()->routeIs('kepalagudang.history.*') ? 'active' : '' }}">
-                <i class="bi bi-clock-history"></i> <span>Tracking/History</span>
+                <i class="bi bi-clock-history"></i> <span>History Request</span>
             </a>
             <a href="{{ route('kepalagudang.closed.form.index') }}"
                 class="list-group-item list-group-item-action py-3 {{ request()->routeIs('kepalagudang.closed.form.index.*') ? 'active' : '' }}">
-                <i class="bi bi-x-circle"></i> <span>Closed Form</span>
+                <i class="bi bi-x-circle"></i> <span>Close Request</span>
             </a>
         </div>
 

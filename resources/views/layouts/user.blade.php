@@ -107,7 +107,7 @@
 
         /* Sidebar Styling */
         .sidebar {
-            background-color: var(--sidebar-bg);
+            background: linear-gradient(180deg, #002060 0%, #001438 100%);
             color: var(--sidebar-color);
             min-height: 100vh;
             width: var(--sidebar-width);
@@ -122,22 +122,20 @@
             flex-direction: column;
         }
 
-        .sidebar-header {
-            padding: 1.5rem 1.5rem 0.5rem;
+        .sidebar-logo {
+            background: #081b8d;
+            padding: 1.2rem 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 70px;
         }
 
-        .sidebar-header h4 {
-            font-weight: 700;
-            font-size: 1.5rem;
-            margin: 0;
-            color: white;
-        }
-
-        .sidebar-header h4 i {
-            font-size: 1.8rem;
-            margin-right: 10px;
+        .sidebar-logo img {
+            max-width: 140px;
+            height: auto;
+            object-fit: contain;
         }
 
         .sidebar .list-group-item {
@@ -398,7 +396,6 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
-
         /* Responsive Adjustments */
         @media (max-width: 992px) {
             .sidebar {
@@ -406,7 +403,10 @@
                 text-align: center;
             }
 
-            .sidebar-header h4 span,
+            .sidebar-logo img {
+                max-width: 40px;
+            }
+
             .sidebar .list-group-item span,
             .user-details {
                 display: none;
@@ -415,10 +415,6 @@
             .sidebar .list-group-item i {
                 margin-right: 0;
                 font-size: 1.3rem;
-            }
-
-            .sidebar-header h4 i {
-                margin-right: 0;
             }
 
             .main-content {
@@ -542,46 +538,47 @@
 
         <!-- Sidebar -->
         <aside :class="{ 'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen }"
-            class="fixed inset-y-0 left-0 z-50 w-48 bg-[#001438] text-white shadow-lg flex flex-col transform transition-transform duration-300 md:translate-x-0 md:static md:inset-0">
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[#001438] text-white shadow-lg flex flex-col transform transition-transform duration-300 md:translate-x-0 md:static md:inset-0">
 
-            <!-- Logo -->
-            <div class="flex items-center justify-between h-16 border-b border-blue-900 bg-[#002060] px-4">
-                <span class="text-lg font-bold">SiSpare</span>
-                <button @click="sidebarOpen = false" class="md:hidden text-white">
-                    <i class="bi bi-x-lg"></i>
-                </button>
+            <!-- Logo Section - Integrated with Sidebar -->
+            <div class="sidebar-logo">
+                <img src="{{ asset('images/logo-pgn.png') }}" alt="PGN Logo" class="w-full h-auto">
             </div>
 
             <!-- Menu -->
-            <nav class="mt-6 px-2 flex-1">
-                <a href="{{ route('jenis.barang') }}" class="flex items-center px-3 py-2 rounded transition duration-200 hover:bg-blue-900 text-gray-300 hover:text-white
+            <nav class="mt-4 px-2 flex-1">
+                <a href="{{ route('jenis.barang') }}"
+                    class="flex items-center px-3 py-2 rounded transition duration-200 hover:bg-blue-900 text-gray-300 hover:text-white
                     {{ request()->routeIs('jenis.barang') ? 'bg-blue-900 text-white' : '' }}">
                     <i class="bi bi-box-seam me-2"></i>
-                    <span>List Sparepart</span>
+                    <span>Daftar Sparepart</span>
                 </a>
 
-                <a href="{{ route('request.barang.index') }}" class="flex items-center px-3 py-2 mt-2 rounded transition duration-200 hover:bg-blue-900 text-gray-300 hover:text-white
+                <a href="{{ route('request.barang.index') }}"
+                    class="flex items-center px-3 py-2 mt-2 rounded transition duration-200 hover:bg-blue-900 text-gray-300 hover:text-white
                     {{ request()->routeIs('request.barang.index') ? 'bg-blue-900 text-white' : '' }}">
                     <i class="bi bi-cart-check me-2"></i>
-                    <span>Request </span>
+                    <span>Request Sparepart</span>
                 </a>
 
-                <a href="{{ route('validasi.index') }}" class="flex items-center px-3 py-2 mt-2 rounded transition duration-200 hover:bg-blue-900 text-gray-300 hover:text-white
+                <a href="{{ route('validasi.index') }}"
+                    class="flex items-center px-3 py-2 mt-2 rounded transition duration-200 hover:bg-blue-900 text-gray-300 hover:text-white
                     {{ request()->routeIs('validasi.index') ? 'bg-blue-900 text-white' : '' }}">
                     <i class="bi bi-check-circle me-2"></i>
-                    <span>Validasi Barang</span>
+                    <span>Sparepart Diterima</span>
                 </a>
 
-                <a href="{{ route('history.index') }}" class="flex items-center px-3 py-2 mt-2 rounded transition duration-200 hover:bg-blue-900 text-gray-300 hover:text-white
-    {{ request()->routeIs('history.index') ? 'bg-blue-900 text-white' : '' }}">
+                <a href="{{ route('history.index') }}"
+                    class="flex items-center px-3 py-2 mt-2 rounded transition duration-200 hover:bg-blue-900 text-gray-300 hover:text-white
+                    {{ request()->routeIs('history.index') ? 'bg-blue-900 text-white' : '' }}">
                     <i class="bi bi-clock-history me-2"></i>
-                    <span>History Barang</span>
+                    <span>History Request</span>
                 </a>
             </nav>
 
             <!-- Profile -->
-            <div class="p-3 border-t border-blue-900 relative" x-data="{ showDropdown: false }"
-                @mouseenter="showDropdown = true" @mouseleave="showDropdown = false">
+            <div class="p-3 border-t border-blue-900 relative" x-data="{ showDropdown: false }" @mouseenter="showDropdown = true"
+                @mouseleave="showDropdown = false">
                 <div class="bg-white text-gray-800 rounded-lg p-2 flex items-center space-x-2 text-sm cursor-pointer">
                     <img src="{{ asset('images/avatar.png') }}" alt="Profile" class="w-8 h-8 rounded-full">
                     <div class="truncate ml-2">
@@ -595,7 +592,8 @@
                         class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Profil Saya</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                        <button type="submit"
+                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
                             Logout
                         </button>
                     </form>

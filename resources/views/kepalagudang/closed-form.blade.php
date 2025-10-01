@@ -7,13 +7,13 @@
         <div class="page-header">
             <h1 class="page-title">
                 <i class="bi bi-file-earmark-check me-2 text-primary"></i>
-                Closed Form (Validasi User)
+                Closed Form
             </h1>
             <p class="page-subtitle">Klik "Closed" untuk memverifikasi detail permintaan</p>
         </div>
 
         <div class="table-container">
-            <h5><i class="bi bi-list-ul me-2"></i> Daftar Permintaan Tervalidasi</h5>
+            <h5><i class="bi bi-list-ul me-2"></i> Daftar Konfirmasi Pengiriman</h5>
 
             <div class="table-responsive">
                 <table class="table table-hover align-middle">

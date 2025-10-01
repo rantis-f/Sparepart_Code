@@ -31,14 +31,14 @@
         overflow: hidden;
     }
     .header {
-        background: #002060;
+        background: #081b8d;
         color: white;
         text-align: center;
         padding: 20px;
         border-bottom: 1px solid #00A0E3;
     }
     .btn-primary {
-        background: #002060;
+        background: #081b8d;
         hover:bg: #001440;
         color: white;
         border: none;
@@ -60,18 +60,15 @@
     <div class="w-full max-w-md bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
 
         <!-- Header PGN -->
-        <div class="bg-[#002060] text-white py-6 px-8 text-center">
-            <div class="flex items-center justify-center space-x-3">
-              
-                <h1 class="text-2xl font-bold">SiSpare</h1>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#ffff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M12 8v8M8 12h8"/>
-                </svg>
-            </div>
-            <p class="text-sm text-[#ffff] mt-1">Sistem Manajemen Sparepart</p>
-            <p class="text-sm text-[#ffff] mt-1">PT PGN COM</p>
+<!-- Header PGN -->
+<div class="bg-[#081b8d] text-white py-3 px-8 text-center">
+    <div class="flex flex-col items-center justify-center space-y-1">
+        <img src="{{ asset('images/logo-pgn.png') }}" alt="PGN Logo" class="h-16">
+        <div class="text-center">
+            <p class="text-xs text-[#ffff]">Sistem Manajemen Sparepart</p>
         </div>
+    </div>
+</div>
 
         <!-- Form Login -->
         <div class="p-8 space-y-6">

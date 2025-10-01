@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Superadmin')</title>
+    <title>@yield('title', 'Network Realibility')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
@@ -80,7 +80,7 @@
 
         .sidebar-header h4 i {
             font-size: 1.8rem;
-            margin-right: 10px;
+            margin-right: 3px;
         }
 
         .sidebar .list-group-item {
@@ -434,7 +434,7 @@
             background-color: rgba(76, 201, 240, 0.1) !important;
         }
 
-        
+
 
         .bg-primary {
             background-color: var(--primary) !important;
@@ -444,9 +444,9 @@
             background-color: var(--danger) !important;
         }
 
-        
 
-       
+
+
 
         .text-primary {
             color: var(--primary) !important;
@@ -472,20 +472,21 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header p-3">
-            <h4 class="text-white"><i class="bi bi-gear-fill"></i> <span>Superadmin</span></h4>
+            <h4 class="text-white text-sm whitespace-nowrap"><i class="bi bi-gear-fill"></i> <span>Network
+                    Reliability</span></h4>
         </div>
         <div class="list-group list-group-flush flex-grow-1">
             <a href="{{ route('superadmin.dashboard') }}" class="list-group-item list-group-item-action">
                 <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
             </a>
             <a href="{{ route('superadmin.request.index') }}" class="list-group-item list-group-item-action">
-                <i class="bi bi-cart-check"></i> <span>Request Barang</span>
+                <i class="bi bi-cart-check"></i> <span>List Request</span>
             </a>
             <a href="{{ route('superadmin.sparepart.index') }}" class="list-group-item list-group-item-action">
                 <i class="bi bi-tools"></i> <span>Daftar Sparepart</span>
             </a>
             <a href="{{ route('superadmin.history.index') }}" class="list-group-item list-group-item-action">
-                <i class="bi bi-clock-history"></i> <span>Histori Barang</span>
+                <i class="bi bi-clock-history"></i> <span>History Request</span>
             </a>
         </div>
 
@@ -519,7 +520,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Fungsi untuk menandai menu aktif berdasarkan URL
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const currentUrl = window.location.href;
             const menuItems = document.querySelectorAll('.sidebar .list-group-item');
 
