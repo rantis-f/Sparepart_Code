@@ -268,6 +268,20 @@ class KepalaGudangController extends Controller
             ], 422);
         }
 
+        // ✅ Cek duplikat Serial Number dalam satu pengiriman
+        $serialNumbers = collect($request->items)->pluck('sn')->filter();
+        if ($serialNumbers->count() !== $serialNumbers->unique()->count()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Serial Number tidak boleh sama dalam satu pengiriman.'
+            ], 422);
+        }
+
+        // Lanjutkan ke validasi stok seperti sebelumnya...
+        if ($serialNumbers->isNotEmpty()) {
+            // ... kode cek stok ...
+        }
+
         $serialNumbers = collect($request->items)->pluck('sn')->filter();
 
         if ($serialNumbers->isNotEmpty()) {

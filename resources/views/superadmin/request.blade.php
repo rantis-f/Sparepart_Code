@@ -327,79 +327,96 @@
                 const tiket = e.target.dataset.tiket;
 
                 if (!tiket) {
-                    alert('Tiket tidak ditemukan');
+                    Swal.fire('Error', 'Tiket tidak ditemukan.', 'error')
                     return;
                 }
 
-                if (confirm('Apakah Anda yakin ingin menyetujui request ini?')) {
-                    fetch(`/superadmin/request/${tiket}/approve`, {
+                Swal.fire({
+                    title: 'Konfirmasi',
+                    text: 'Apakah Anda yakin ingin menyetujui request ini?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Setujui',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/superadmin/request/${tiket}/approve`, {
                             method: 'POST',
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                    'content'),
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({
-                                tiket: tiket
+                            body: JSON.stringify({ tiket })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire('Berhasil!', data.message, 'success').then(() => location.reload());
+                                } else {
+                                    Swal.fire('Gagal!', data.message, 'error');
+                                }
                             })
-                        })
-
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert(data.message);
-                                location.reload();
-                            } else {
-                                alert('Gagal: ' + data.message);
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Error:', err);
-                            alert('Terjadi kesalahan teknis.');
-                        });
-                }
+                            .catch(err => {
+                                console.error('Error:', err);
+                                Swal.fire('Error', 'Terjadi kesalahan teknis.', 'error');
+                            });
+                    }
+                });
             }
         });
 
         // Reject
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('btn-reject-modal')) {
-                const tiket = e.target.dataset.tiket;
-                const reason = prompt('Masukkan alasan penolakan:');
+document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-reject-modal');
+            if (!btn) return;
 
-                if (!tiket) {
-                    alert('Tiket tidak ditemukan');
-                    return;
+            const tiket = btn.dataset.tiket;
+            if (!tiket) {
+                Swal.fire('Error', 'Tiket tidak ditemukan.', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Tolak Permintaan',
+                input: 'textarea',
+                inputLabel: 'Alasan Penolakan',
+                inputPlaceholder: 'Tuliskan alasan penolakan di sini...',
+                showCancelButton: true,
+                confirmButtonText: 'Tolak',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                preConfirm: (reason) => {
+                    if (!reason) {
+                        Swal.showValidationMessage('Alasan tidak boleh kosong');
+                    }
+                    return reason;
                 }
-
-                if (reason) {
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const reason = result.value;
                     fetch(`/superadmin/request/${tiket}/reject`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                    'content'),
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                catatan: reason
-                            })
-                        })
-
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ catatan: reason })
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                alert(data.message);
-                                location.reload();
+                                Swal.fire('Berhasil!', data.message, 'success').then(() => location.reload());
                             } else {
-                                alert('Gagal: ' + data.message);
+                                Swal.fire('Gagal!', data.message, 'error');
                             }
                         })
                         .catch(err => {
                             console.error('Error:', err);
-                            alert('Terjadi kesalahan teknis.');
+                            Swal.fire('Error', 'Terjadi kesalahan teknis.', 'error');
                         });
                 }
-            }
-        });
+            });
+        })
     </script>
 @endpush

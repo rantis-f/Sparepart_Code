@@ -19,43 +19,38 @@
         </div>
     </div>
 
-    <!-- Ganti bagian filter-card jadi form GET -->
-    <div class="filter-card">
-        <h5 class="mb-4"><i class="bi bi-funnel me-2"></i>Filter Data</h5>
-        <form method="GET" action="{{ route('kepalagudang.history.index') }}">
-            <div class="row">
-                <div class="col-md-3 mb-3">
-                    <label for="dateFrom" class="form-label">Dari Tanggal</label>
-                    <input type="date" class="form-control" id="dateFrom" name="date_from"
-                        value="{{ request('date_from') }}">
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label for="dateTo" class="form-label">Sampai Tanggal</label>
-                    <input type="date" class="form-control" id="dateTo" name="date_to"
-                        value="{{ request('date_to') }}">
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label for="statusFilter" class="form-label">Status</label>
-                    <select class="form-select" id="statusFilter" name="status">
-                        <option value="">Semua Status</option>
-                        <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui
-                        </option>
-                        <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                        <option value="diproses" {{ request('status') == 'diproses' ? 'selected' : '' }}>On Progress
-                        </option>
-                    </select>
-                </div>
+<div class="filter-card">
+    <h5 class="mb-4"><i class="bi bi-funnel me-2"></i>Filter Data</h5>
+    <form method="GET" action="{{ route('kepalagudang.history.index') }}">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <label for="dateFrom" class="form-label">Dari Tanggal</label>
+                <input type="date" class="form-control" id="dateFrom" name="date_from" value="{{ request('date_from') }}">
             </div>
-            <div class="d-flex justify-content-end">
-                <a href="{{ route('kepalagudang.history.index') }}" class="btn btn-light me-2">
-                    <i class="bi bi-arrow-clockwise me-1"></i> Reset
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search me-1"></i> Terapkan Filter
-                </button>
+            <div class="col-md-4 mb-4">
+                <label for="dateTo" class="form-label">Sampai Tanggal</label>
+                <input type="date" class="form-control" id="dateTo" name="date_to" value="{{ request('date_to') }}">
             </div>
-        </form>
-    </div>
+            <div class="col-md-4 mb-4">
+                <label for="statusFilter" class="form-label">Status</label>
+                <select class="form-select" id="statusFilter" name="status">
+                    <option value="">Semua Status</option>
+                    <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
+                    <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                    <option value="diproses" {{ request('status') == 'diproses' ? 'selected' : '' }}>On Progress</option>
+                </select>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end">
+            <a href="{{ route('kepalagudang.history.index') }}" class="btn btn-light me-2">
+                <i class="bi bi-arrow-clockwise me-1"></i> Reset
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i> Terapkan Filter
+            </button>
+        </div>
+    </form>
+</div>
 
     <div class="d-flex justify-content-end mb-3">
         <button class="btn btn-export">
@@ -185,7 +180,9 @@
                     <hr>
                     <h6 class="fw-bold text-success mb-3"><i class="bi bi-truck"></i> Data Pengiriman</h6>
                     <div class="mb-3">
-                        <p><strong>Tanggal Pengiriman:</strong> <span id="modal-tanggal-pengiriman-display">-</span></p>
+                         <p><strong>Tanggal Pengiriman:</strong> <span id="modal-tanggal-pengiriman-display">-</span></p>
+                        <p><strong>Ekspedisi:</strong> <span id="modal-ekspedisi-display">-</span></p>
+                        <p><strong>Nomor Resi:</strong> <span id="modal-resi-display">-</span></p>
                     </div>
                     <div class="table-responsive mb-4">
                         <table class="table table-bordered">
@@ -207,6 +204,47 @@
                             </tbody>
                         </table>
                     </div>
+                    <hr>
+
+                    <!-- 🔸 Bagian Bukti Penerimaan - Layout Kiri Kanan -->
+                    <h6 class="fw-bold text-info mb-3"><i class="bi bi-image"></i>Lampiran</h6>
+                    <div class="row">
+                        <!-- Card Bukti Pengiriman (Kiri) -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-warning text-dark">
+                                    <i class="bi bi-truck me-1"></i> Bukti Pengiriman
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="bukti-pengiriman-preview" class="d-flex justify-content-center align-items-center"
+                                        style="min-height: 200px;">
+                                        <div class="text-muted">
+                                            <i class="bi bi-image display-6"></i>
+                                            <p class="mt-2">Belum ada bukti pengiriman</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Bukti Penerimaan (Kanan) -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-info text-white">
+                                    <i class="bi bi-check-circle me-1"></i> Bukti Penerimaan
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="bukti-penerimaan-preview" class="d-flex justify-content-center align-items-center"
+                                        style="min-height: 200px;">
+                                        <div class="text-muted">
+                                            <i class="bi bi-image display-6"></i>
+                                            <p class="mt-2">Belum ada bukti penerimaan</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -225,7 +263,7 @@
         // Pastikan backdrop hilang saat modal ditutup
         const modalElement = document.getElementById('modalHistory');
         if (modalElement) {
-            modalElement.addEventListener('hidden.bs.modal', function() {
+            modalElement.addEventListener('hidden.bs.modal', function () {
                 const backdrop = document.querySelector('.modal-backdrop');
                 if (backdrop) {
                     backdrop.remove();
@@ -235,7 +273,7 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Highlight menu aktif
             const currentLocation = location.href;
             const menuItems = document.querySelectorAll('.list-group-item');
@@ -247,22 +285,16 @@
                 }
             }
 
-            // Set tanggal default untuk filter
-            const dateFromInput = document.getElementById('dateFrom');
-            const dateToInput = document.getElementById('dateTo');
 
-            if (!dateFromInput.value) {
-                dateFromInput.valueAsDate = null;
-            }
-
-            if (!dateToInput.value) {
-                dateToInput.valueAsDate = null;
-            }
+            // Toggle sidebar on mobile (if needed)
+            document.querySelector('.navbar-toggler').addEventListener('click', function () {
+                document.querySelector('.sidebar').classList.toggle('show');
+            });
         });
 
         // Load detail history saat modal dibuka
         document.querySelectorAll('.btn-history').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const tiket = this.dataset.tiket;
 
                 // Reset isi modal
@@ -270,15 +302,15 @@
                 document.getElementById('modal-requester-display').textContent = '-';
                 document.getElementById('modal-tanggal-request-display').textContent = '-';
                 document.getElementById('modal-tanggal-pengiriman-display').textContent = '-';
+                document.getElementById('modal-ekspedisi-display').textContent = '-';
+                document.getElementById('modal-resi-display').textContent = '-';
 
                 // Reset tabel
-                document.getElementById('request-table-body').innerHTML =
-                    '<tr><td colspan="5" class="text-center">Memuat data...</td></tr>';
-                document.getElementById('pengiriman-table-body').innerHTML =
-                    '<tr><td colspan="7" class="text-center">Memuat data...</td></tr>';
+                document.getElementById('request-table-body').innerHTML = '<tr><td colspan="5" class="text-center">Memuat data...</td></tr>';
+                document.getElementById('pengiriman-table-body').innerHTML = '<tr><td colspan="7" class="text-center">Memuat data...</td></tr>';
 
                 // Ambil data dari API
-                fetch(`/kepalagudang/history/${tiket}/api`)
+                fetch(`/kepalagudang/closed-form/${encodeURIComponent(tiket)}/detail`)
                     .then(response => {
                         if (!response.ok) {
                             return response.json().then(errData => {
@@ -288,18 +320,15 @@
                         return response.json();
                     })
                     .then(data => {
+                        const permintaan = data.permintaan;
+            const pengiriman = data?.pengiriman;
+            const attachments = data?.pengiriman?.attachments || [];
+
                         // Isi data request
-                        document.getElementById('modal-tiket-display').textContent = data.permintaan
-                            .tiket;
-                        document.getElementById('modal-requester-display').textContent = data.permintaan
-                            .user?.name || 'User';
-                        document.getElementById('modal-tanggal-request-display').textContent = new Date(
-                                data.permintaan.tanggal_permintaan)
-                            .toLocaleDateString('id-ID', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            });
+                        document.getElementById('modal-tiket-display').textContent = data.permintaan.tiket;
+                        document.getElementById('modal-requester-display').textContent = data.permintaan.user?.name || 'User';
+                        document.getElementById('modal-tanggal-request-display').textContent = new Date(data.permintaan.tanggal_permintaan)
+                            .toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
                         // Isi tabel request
                         const requestTableBody = document.getElementById('request-table-body');
@@ -317,22 +346,18 @@
                                 requestTableBody.appendChild(tr);
                             });
                         } else {
-                            requestTableBody.innerHTML =
-                                '<tr><td colspan="5" class="text-center">Tidak ada data request.</td></tr>';
+                            requestTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Tidak ada data request.</td></tr>';
                         }
 
                         // Isi data pengiriman
                         if (data.pengiriman) {
-                            document.getElementById('modal-tanggal-pengiriman-display').textContent =
-                                new Date(data.pengiriman.tanggal_transaksi)
-                                .toLocaleDateString('id-ID', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                });
+                            document.getElementById('modal-tanggal-pengiriman-display').textContent = new Date(data.pengiriman.tanggal_transaksi)
+                                .toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
-                            const pengirimanTableBody = document.getElementById(
-                            'pengiriman-table-body');
+                document.getElementById('modal-ekspedisi-display').textContent = data.pengiriman.ekspedisi ?? '-';
+                document.getElementById('modal-resi-display').textContent = data.pengiriman.no_resi ?? '-';
+
+                            const pengirimanTableBody = document.getElementById('pengiriman-table-body');
                             pengirimanTableBody.innerHTML = '';
                             if (data.pengiriman.details && data.pengiriman.details.length > 0) {
                                 data.pengiriman.details.forEach((item, index) => {
@@ -349,14 +374,48 @@
                                     pengirimanTableBody.appendChild(tr);
                                 });
                             } else {
-                                pengirimanTableBody.innerHTML =
-                                    '<tr><td colspan="7" class="text-center">Tidak ada data pengiriman.</td></tr>';
+                                pengirimanTableBody.innerHTML = '<tr><td colspan="7" class="text-center">Tidak ada data pengiriman.</td></tr>';
                             }
+                             const buktiPengirimanEl = document.getElementById('bukti-pengiriman-preview');
+                const buktiPenerimaanEl = document.getElementById('bukti-penerimaan-preview');
+                buktiPengirimanEl.innerHTML = '';
+                buktiPenerimaanEl.innerHTML = '';
+
+                // coba cari type 'img_gudang' dan 'img_user' (atau sesuaikan type Anda)
+                const imgGudang = attachments.find(a => a.type === 'img_gudang') || attachments[0] || null;
+                const imgUser = attachments.find(a => a.type === 'img_user') || null;
+                console.log(imgGudang)
+
+                if (imgGudang && imgGudang.url) {
+                    buktiPengirimanEl.innerHTML = `<div class="text-center">
+                        <a href="${imgGudang.url}" target="_blank">
+                            <img src="${imgGudang.url}" class="img-fluid rounded border" style="max-height:300px" alt="${imgGudang.filename}">
+                        </a>
+                        <p class="mt-2 small text-muted">${imgGudang.filename}</p>
+                    </div>`;
+                } else {
+                    buktiPengirimanEl.innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti pengiriman</p></div>`;
+                }
+
+                if (imgUser && imgUser.url) {
+                    buktiPenerimaanEl.innerHTML = `<div class="text-center">
+                        <a href="${imgUser.url}" target="_blank">
+                            <img src="${imgUser.url}" class="img-fluid rounded border" style="max-height:300px" alt="${imgUser.filename}">
+                        </a>
+                        <p class="mt-2 small text-muted">${imgUser.filename}</p>
+                    </div>`;
+                } else {
+                    buktiPenerimaanEl.innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti penerimaan</p></div>`;
+                }
+                            
+                            
                         } else {
-                            document.getElementById('modal-tanggal-pengiriman-display').textContent =
-                                '-';
-                            document.getElementById('pengiriman-table-body').innerHTML =
-                                '<tr><td colspan="7" class="text-center">Belum ada pengiriman.</td></tr>';
+                            document.getElementById('modal-tanggal-pengiriman-display').textContent = '-';
+                document.getElementById('modal-ekspedisi-display').textContent = '-';
+                document.getElementById('modal-resi-display').textContent = '-';
+                document.getElementById('pengiriman-table-body').innerHTML = '<tr><td colspan="7" class="text-center">Belum ada data pengiriman.</td></tr>';
+                document.getElementById('bukti-pengiriman-preview').innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti pengiriman</p></div>`;
+                document.getElementById('bukti-penerimaan-preview').innerHTML = `<div class="text-muted"><i class="bi bi-image display-6"></i><p class="mt-2">Belum ada bukti penerimaan</p></div>`;
                         }
 
                         // Buka modal

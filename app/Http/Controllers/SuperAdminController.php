@@ -152,14 +152,15 @@ public function requestIndex(Request $request)
             })
             ->orWhereHas('pengiriman') // atau sudah dikirim
             ->orderBy('id', 'desc');
+            
 
-        // Filter tanggal
-        if ($request->filled('dateFrom')) {
-            $query->whereDate('tanggal_permintaan', '>=', $request->input('dateFrom'));
-        }
-        if ($request->filled('dateTo')) {
-            $query->whereDate('tanggal_permintaan', '<=', $request->input('dateTo'));
-        }
+        // 🔹 Filter berdasarkan tanggal
+if ($request->filled('date_from') && $request->filled('date_to')) {
+    $dateFrom = Carbon::parse($request->date_from)->startOfDay(); 
+    $dateTo = Carbon::parse($request->date_to)->endOfDay();       
+
+    $query->whereBetween('tanggal_perubahan', [$dateFrom, $dateTo]);
+}
 
         $requests = $query->distinct()->paginate(10)->withQueryString();
 

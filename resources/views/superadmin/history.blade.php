@@ -6,38 +6,38 @@
     <!-- Page Header -->
 
 
-    <!-- Filter Section -->
-    <div class="filter-card mb-4">
-        <h5 class="mb-4"><i class="bi bi-funnel me-2"></i>Filter Data</h5>
-        <form method="GET" action="{{ route('superadmin.history.index') }}" class="row g-3">
-            <div class="col-md-3">
+<div class="filter-card">
+    <h5 class="mb-4"><i class="bi bi-funnel me-2"></i>Filter Data</h5>
+    <form method="GET" action="{{ route('superadmin.history.index') }}">
+        <div class="row">
+            <div class="col-md-4 mb-4">
                 <label for="dateFrom" class="form-label">Dari Tanggal</label>
-                <input type="date" class="form-control" id="dateFrom" name="dateFrom" value="{{ request('dateFrom') }}">
+                <input type="date" class="form-control" id="dateFrom" name="date_from" value="{{ request('date_from') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4 mb-4">
                 <label for="dateTo" class="form-label">Sampai Tanggal</label>
-                <input type="date" class="form-control" id="dateTo" name="dateTo" value="{{ request('dateTo') }}">
+                <input type="date" class="form-control" id="dateTo" name="date_to" value="{{ request('date_to') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4 mb-4">
                 <label for="statusFilter" class="form-label">Status</label>
-                <select class="form-select" id="statusFilter" name="statusFilter">
+                <select class="form-select" id="statusFilter" name="status">
                     <option value="">Semua Status</option>
-                    <option value="disetujui" {{ request('statusFilter') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                    <option value="ditolak" {{ request('statusFilter') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                    <option value="diproses" {{ request('statusFilter') == 'diproses' ? 'selected' : '' }}>Diproses</option>
-                    <option value="dikirim" {{ request('statusFilter') == 'dikirim' ? 'selected' : '' }}>Dikirim</option>
+                    <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
+                    <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                    <option value="diproses" {{ request('status') == 'diproses' ? 'selected' : '' }}>On Progress</option>
                 </select>
             </div>
-            <div class="col-12 d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search me-1"></i> Terapkan Filter
-                </button>
-                <a href="{{ route('superadmin.history.index') }}" class="btn btn-light ms-2">
-                    <i class="bi bi-arrow-clockwise me-1"></i> Reset
-                </a>
-            </div>
-        </form>
-    </div>
+        </div>
+        <div class="d-flex justify-content-end">
+            <a href="{{ route('superadmin.history.index') }}" class="btn btn-light me-2">
+                <i class="bi bi-arrow-clockwise me-1"></i> Reset
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i> Terapkan Filter
+            </button>
+        </div>
+    </form>
+</div>
 
     <!-- Export Button -->
     <div class="d-flex justify-content-end mb-3">
@@ -218,15 +218,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Set tanggal default
-            const today = new Date();
-            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            if (!document.getElementById('dateFrom').value) {
-                document.getElementById('dateFrom').valueAsDate = firstDayOfMonth;
-            }
-            if (!document.getElementById('dateTo').value) {
-                document.getElementById('dateTo').valueAsDate = today;
-            }
 
             // Load detail history
             document.querySelectorAll('.btn-history').forEach(button => {
