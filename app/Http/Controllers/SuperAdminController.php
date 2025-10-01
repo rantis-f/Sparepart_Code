@@ -176,7 +176,6 @@ class SuperAdminController extends Controller
         // 🔹 ADMIN (Mbak Inong) - ID 15
         if ($user->id === 15) {
             $permintaan = Permintaan::where('tiket', $tiket)->firstOrFail();
-            $pengiriman = Pengiriman::where('tiket_permintaan', $tiket)->first();
 
             if ($permintaan->status_ro !== 'approved' || $permintaan->status_gudang !== 'approved') {
                 return response()->json([
@@ -219,6 +218,9 @@ class SuperAdminController extends Controller
             ]);
 
             $pengiriman = $permintaan->pengiriman;
+            $pengiriman->update([
+                'status' => 'on_delivery',
+            ]);
 
             if ($pengiriman) {
                 $snList = $pengiriman->details->pluck('sn')->filter()->map(function ($sn) {

@@ -68,29 +68,27 @@
     <!-- Status Badge -->
     @php
         $status = '';
-        if ($req->status_super_admin === 'approved') {
+        if ($req->status_super_admin === 'approved' && Auth::id() === 16) {
+            $status = 'Disetujui';
+        } elseif ($req->status_admin === 'approved' && Auth::id() === 15) {
             $status = 'Disetujui';
         } elseif ($req->status_super_admin === 'rejected') {
             $status = 'Ditolak';
-        } elseif ($req->status_admin === 'on progres') {
-            $status = 'On Progress';
-        } elseif ($req->status_super_admin === 'pending' && $req->status_admin === 'approved') {
-            $status = 'On Progress';
         } else {
-            $status = 'Pending';
-        }
+            $status = 'On Progress';
+        } 
 
         // Warna badge
         $bg = '';
-        if ($req->status_super_admin === 'approved') {
+        if ($req->status_super_admin == 'approved' && Auth::id() === 16) {
             $bg = 'bg-success';
-        } elseif ($req->status_super_admin === 'rejected') {
+        } elseif ($req->status_admin == 'approved' && Auth::id() === 15) {
+            $bg = 'bg-success';
+        } elseif ($req->status_super_admin == 'rejected') {
             $bg = 'bg-danger';
-        } elseif ($req->status_admin === 'on progres' || ($req->status_super_admin === 'pending' && $req->status_admin === 'approved')) {
-            $bg = 'bg-warning text-dark';
         } else {
-            $bg = 'bg-secondary';
-        }
+            $bg = 'bg-warning text-dark';
+        } 
     @endphp
 
     <span class="badge {{ $bg }}">

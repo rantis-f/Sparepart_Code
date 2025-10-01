@@ -132,7 +132,6 @@ class UserController extends Controller
         $user->update($data);
 
         return response()->json(['success' => true]);
-
     }
 
 
@@ -145,20 +144,23 @@ class UserController extends Controller
     }
 
 
-public function validasiIndex()
-{
-    $user = auth()->user();
+    public function validasiIndex()
+    {
+        $user = auth()->user();
 
-    $requests = Permintaan::with(['details', 'pengiriman.details'])
-        ->where('user_id', $user->id)
-        ->where('status_gudang', 'approved')
-        ->where('status_penerimaan', '!=', 'diterima')
-        ->orderBy('id', 'desc')
-        ->get();
+        $requests = Permintaan::with(['details', 'pengiriman.details', 'pengiriman'])
+            ->where('user_id', $user->id)
+            ->where('status_gudang', 'approved')
+            ->whereHas('pengiriman', function ($query) {
+                $query->where('status', '!=', 'diterima');
+            })
+            ->orderBy('id', 'desc')
+            ->get();
 
-    $data = $requests; // tambahkan ini
-    return view('user.validasi', compact('requests', 'data'));
-}
+
+        $data = $requests; // tambahkan ini
+        return view('user.validasi', compact('requests', 'data'));
+    }
 
 
     public function terimaBarang(Request $request, $tiket)
@@ -191,19 +193,23 @@ public function validasiIndex()
     {
         $user = auth()->user();
 
-       $query = Permintaan::with([
-    'details',
-    'pengiriman' => function ($q) {
-        $q->select('id', 'tiket_permintaan', 'status') // pakai tiket_permintaan sebagai foreign key
-          ->whereIn('status', ['diterima', 'close']);
-    },
-    'pengiriman.details',
-])
-->where('user_id', $user->id)
-->whereHas('pengiriman', function (Builder $q) {
-    $q->whereIn('status', ['diterima', 'close']);
-})
-->orderBy('id', 'desc');
+        $query = Permintaan::with([
+            'details',
+            'pengiriman' => function ($q) {
+                $q->select('id', 'tiket_permintaan', 'status')
+                    ->whereIn('status', ['diterima', 'close']);
+            },
+            'pengiriman.details',
+        ])
+            ->where('user_id', $user->id)
+            ->where(function (Builder $q) {
+                $q->whereHas('pengiriman', function (Builder $q2) {
+                    $q2->whereIn('status', ['diterima', 'close']);
+                })
+                ->orWhere('status_super_admin', 'rejected');
+            })
+            ->orderBy('id', 'desc');
+
 
         // Filter berdasarkan status
         if ($request->filled('statusFilter')) {
@@ -225,7 +231,7 @@ public function validasiIndex()
         return view('user.history', compact('requests'));
     }
 
-        public function historyDetailApi($tiket)
+    public function historyDetailApi($tiket)
     {
         $permintaan = Permintaan::with(['user', 'details'])
             ->where('tiket', $tiket)

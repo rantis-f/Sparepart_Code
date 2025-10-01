@@ -65,7 +65,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-sm">
                                     <div class="flex items-center space-x-2">
-                                        @if($req->pengiriman->status == 'diterima')
+                                        @if($req?->pengiriman?->status == 'diterima')
                                             <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Diterima</span>
                                         @else
                                             <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Close</span>

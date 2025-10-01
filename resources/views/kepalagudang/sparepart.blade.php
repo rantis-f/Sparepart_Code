@@ -266,7 +266,7 @@
                             <div class="col-md-6">
                                 <label for="quantity" class="form-label">Quantity</label>
                                 <input type="number" class="form-control @error('quantity') is-invalid @enderror"
-                                    id="quantity" name="quantity" min="1" required
+                                    id="quantity" name="quantity" min="1"
                                     value="{{ old('quantity', 1) }}">
                                 @error('quantity')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -997,28 +997,43 @@ function showDetail(tiket_sparepart) {
         document.addEventListener('DOMContentLoaded', function() {
             const kategoriSelect = document.getElementById('kategori');
             const serialNumberInput = document.getElementById('serialNumber');
+            const quantityInput = document.getElementById('quantity');
             const jenisSelect = document.getElementById('jenisSparepart');
             const tipeSelect = document.getElementById('typeSparepart');
             const vendorSelect = document.getElementById('vendor');
 
             // Semua field kecuali kategori & serialNumber
             const otherFields = document.querySelectorAll(
-                '#sparepartForm select:not(#kategori), #sparepartForm input:not(#serialNumber), #sparepartForm textarea'
+                '#sparepartForm select:not(#kategori), #sparepartForm input:not(#serialNumber):not(#quantity), #sparepartForm textarea'
             );
 
             // Fungsi untuk update status Serial Number
-            function updateSerialNumberField(kategori) {
-                if (!kategori || kategori === 'non-aset') {
-                    serialNumberInput.disabled = true;
-                    serialNumberInput.value = '';
-                } else if (kategori === 'aset') {
-                    serialNumberInput.disabled = false;
-                }
-            }
+ function updateFields(kategori) {
+        if (!kategori) {
+            // Belum pilih kategori → matikan semua
+            serialNumberInput.disabled = true;
+            serialNumberInput.value = '';
+            quantityInput.disabled = true;
+            quantityInput.value = '';
+        } else if (kategori === 'aset') {
+            // Aset: SN aktif, Quantity = 1 & disabled
+            serialNumberInput.disabled = false;
+            quantityInput.value = 1;
+            // quantityInput.disabled = true;  
+            
+        } else if (kategori === 'non-aset') {
+            // Non Aset: SN mati, Quantity bebas
+            serialNumberInput.disabled = true;
+            serialNumberInput.value = '';
+            quantityInput.disabled = false;
+            quantityInput.min = 1;
+            quantityInput.removeAttribute('max');
+        }
+    }
 
             // Inisialisasi: semua field disabled + serial number disabled
             otherFields.forEach(field => field.disabled = true);
-            updateSerialNumberField(''); // disabled karena belum pilih kategori
+            updateFields(''); // disabled karena belum pilih kategori
 
             if (kategoriSelect) {
                 kategoriSelect.addEventListener('change', function() {
@@ -1026,7 +1041,7 @@ function showDetail(tiket_sparepart) {
 
                     if (kategori) {
                         otherFields.forEach(field => field.disabled = false);
-                        updateSerialNumberField(kategori); // aktifkan/nonaktifkan SN
+                        updateFields(kategori); // aktifkan/nonaktifkan SN
 
                         // Filter jenis & tipe
                         let filteredJenis = jenisData.filter(j => j.kategori === kategori);
