@@ -185,7 +185,6 @@ if ($request->filled('date_from') && $request->filled('date_to')) {
                 ], 400);
             }
 
-            // ✅ Set status admin + next step: Super Admin → on progres
             $permintaan->update([
                 'status_admin' => 'approved',
                 'status_super_admin' => 'on progres',
@@ -210,12 +209,10 @@ if ($request->filled('date_from') && $request->filled('date_to')) {
                 ], 400);
             }
 
-            // ✅ Final approve → close semua status
             $permintaan->update([
                 'status_super_admin' => 'approved',
                 'approved_by_super_admin' => $user->id,
                 'catatan_super_admin' => $request->catatan ?? null,
-                'status_barang' => 'on_delivery',
             ]);
 
             $pengiriman = $permintaan->pengiriman;
@@ -321,7 +318,7 @@ if ($request->filled('date_from') && $request->filled('date_to')) {
     /**
      * Tolak permintaan → broadcast rejected ke semua level
      */
-    public function reject(Request $request, $tiket) // ✅ Ambil $tiket dari URL
+    public function reject(Request $request, $tiket) 
     {
         try {
             $user = Auth::user();
@@ -342,7 +339,6 @@ if ($request->filled('date_from') && $request->filled('date_to')) {
                     'status_super_admin' => 'rejected',
                     'status_gudang' => 'rejected',
                     'status_ro' => 'rejected',
-                    'status_barang' => 'rejected', // ✅ 'closed', bukan 'rejected'
                     'approved_by_admin' => $user->id,
                     'catatan_admin' => $request->catatan ?? 'Ditolak oleh Admin (Mbak Inong)',
                     'status' => 'ditolak',

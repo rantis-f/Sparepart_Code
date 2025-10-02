@@ -109,7 +109,7 @@ class KepalaGudangController extends Controller
     {
         $requests = Permintaan::where('status_ro', 'approved')
             ->whereIn('status_gudang', ['pending', 'on progres'])
-            ->with(['user', 'details']) // Load relasi jika diperlukan
+            ->with(['user', 'details'])
             ->orderBy('id', 'desc')
             ->get();
 
@@ -195,7 +195,6 @@ class KepalaGudangController extends Controller
                 'status_ro' => 'rejected',
                 'status_admin' => 'rejected',
                 'status_super_admin' => 'rejected',
-                'status_barang' => 'rejected',
                 'status' => 'ditolak',
                 'catatan_gudang' => $catatan,
             ]);
@@ -321,7 +320,6 @@ class KepalaGudangController extends Controller
             // ambil permintaan & cek status
             $permintaan = Permintaan::where('tiket', $tiket)->firstOrFail();
 
-            // pastikan status sesuai (sesuaikan string sesuai DB Anda)
             if ($permintaan->status_gudang !== 'on progres') {
                 return response()->json([
                     'success' => false,
@@ -398,7 +396,7 @@ class KepalaGudangController extends Controller
 
             $permintaan->update([
                 'status_gudang' => 'approved',
-                'status_admin' => 'on progres', // atau sesuai alur Anda
+                'status_admin' => 'on progres',
                 'approved_by_admin' => $user->id,
                 'catatan_admin' => $request->catatan ?? null,
                 'status' => 'diterima',
@@ -450,7 +448,6 @@ class KepalaGudangController extends Controller
                 'status_ro' => 'rejected',
                 'status_admin' => 'rejected',
                 'status_super_admin' => 'rejected',
-                'status_barang' => 'rejected', // 🔥 Wajib!
                 'catatan_gudang' => $request->catatan ?? 'Ditolak oleh Kepala Gudang',
                 'status' => 'ditolak',
             ]);
@@ -511,34 +508,28 @@ class KepalaGudangController extends Controller
 
     public function closedFormIndex()
     {
-        // Ambil permintaan yang sudah "diterima" / closed — sesuaikan kondisi where() jika Anda pakai status lain
-        $permintaans = Permintaan::with(['user', 'pengiriman']) // pastikan relasi user ada
+        $permintaans = Permintaan::with(['user', 'pengiriman'])
             ->whereHas('pengiriman', function ($q) {
                 $q->where('status', 'diterima');
             })
             ->orderBy('id', 'desc')
             ->get();
 
-        // Ambil pengiriman terkait (by tiket) — lakukan sekali memakai pengumpulan tiket untuk efisiensi
         $tiketList = $permintaans->pluck('tiket')->filter()->unique()->values()->all();
 
         $pengirimans = Pengiriman::whereIn('tiket_permintaan', $tiketList)
-            ->with('attachments') // kalau Attachment relation ada di model Pengiriman
+            ->with('attachments')
             ->get()
             ->groupBy('tiket_permintaan');
 
-        // Mapping ke struktur yang sama seperti dummy
+
         $result = $permintaans->map(function ($p) use ($pengirimans) {
-            // cari pengiriman terbaru untuk tiket ini (jika ada)
             $pengGroup = $pengirimans->get($p->tiket);
             $pengiriman = null;
             if ($pengGroup && $pengGroup instanceof \Illuminate\Support\Collection) {
-                // ambil paling baru berdasarkan id atau tanggal_transaksi jika ada
                 $pengiriman = $pengGroup->sortByDesc('id')->first();
             }
 
-            // cari attachment (foto bukti) jika ada — coba dari pengiriman.attachments dulu,
-            // fallback ke kolom pada permintaan (mis. foto_bukti_penerimaan)
             $fotoPath = null;
             if ($pengiriman && $pengiriman->attachments && $pengiriman->attachments->isNotEmpty()) {
                 // pilih attachment tipe gambar (opsional: filter by type jika ada)
@@ -624,19 +615,15 @@ class KepalaGudangController extends Controller
             return response()->json(['success' => false, 'message' => 'Permintaan tidak ditemukan.'], 404);
         }
 
-        // ambil pengiriman terkait (jika ada) beserta details dan attachments
         $pengiriman = Pengiriman::with(['details', 'attachments'])
             ->where('tiket_permintaan', $tiket)
             ->first();
 
-        // konversi data permintaan ke array
         $permintaanData = $permintaan->toArray();
 
         $pengirimanData = null;
         if ($pengiriman) {
-            // ubah attachments ke bentuk yang aman (sertakan URL jika file ada)
             $attachments = collect($pengiriman->attachments ?? [])->map(function ($att) {
-                // $att bisa berupa model atau array tergantung toArray() sebelumnya — akses dengan property/array safe
                 $path = is_array($att) ? ($att['path'] ?? null) : ($att->path ?? null);
                 $id = is_array($att) ? ($att['id'] ?? null) : ($att->id ?? null);
                 $type = is_array($att) ? ($att['type'] ?? null) : ($att->type ?? null);
@@ -646,11 +633,9 @@ class KepalaGudangController extends Controller
 
                 $url = null;
                 if ($path) {
-                    // jika file fisik ada di disk public -> buat URL asset('storage/...')
                     if (Storage::disk('public')->exists($path)) {
                         $url = asset('storage/' . $path);
                     } else {
-                        // fallback: jika Anda menyimpan full URL di path, kembalikan langsung
                         if (filter_var($path, FILTER_VALIDATE_URL)) {
                             $url = $path;
                         } else {
@@ -668,8 +653,6 @@ class KepalaGudangController extends Controller
                     'size' => $size,
                 ];
             })->values()->all();
-
-            // ambil data pengiriman dan ganti attachments dengan URL-ready array
             $pengirimanData = $pengiriman->toArray();
             $pengirimanData['attachments'] = $attachments;
         }

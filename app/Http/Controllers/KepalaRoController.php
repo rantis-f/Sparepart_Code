@@ -75,11 +75,9 @@ class KepalaROController extends Controller
 
         $request->save();
 
-        return redirect()->back()->with('success', 'Permintaan disetujui dan diteruskan ke Kepala Gudang!');
+        return redirect()->back()->with('success', 'Permintaan disetujui dan diteruskan ke Warehouse Head!');
     }
-    // Reject permintaan
-    // Di KepalaROController.php - fungsi reject()
-
+    
     public function reject($id)
     {
         $user = Auth::user();
