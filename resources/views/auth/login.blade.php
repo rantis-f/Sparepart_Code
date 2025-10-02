@@ -115,7 +115,7 @@
                             required
                             class="w-full px-4 py-3 rounded-lg input-field shadow-sm transition"
                             placeholder="••••••••"
-                        />
+                        />                        
                     </div>
 
                     <!-- Remember Me -->

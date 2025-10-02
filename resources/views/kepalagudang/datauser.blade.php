@@ -194,16 +194,16 @@
                                 value="{{ old('jabatan') }}">
                         </div>
 
-                        <!-- Password Field with Toggle -->
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <div class="input-group">
-                                <input type="password" name="password" class="form-control" id="password" required>
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+                            <!-- Password Field with Toggle -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="password" class="form-control" id="password" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
                         <!-- Password Confirmation Field with Toggle -->
                         <div class="mb-3">
@@ -257,50 +257,6 @@
     </div>
 
 
-    <!-- Bootstrap Icons CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Toggle untuk password
-            const togglePassword = document.getElementById('togglePassword');
-            const password = document.getElementById('password');
-
-            togglePassword.addEventListener('click', function() {
-                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-                password.setAttribute('type', type);
-
-                // Ganti icon
-                const icon = this.querySelector('i');
-                if (type === 'password') {
-                    icon.classList.remove('bi-eye-slash');
-                    icon.classList.add('bi-eye');
-                } else {
-                    icon.classList.remove('bi-eye');
-                    icon.classList.add('bi-eye-slash');
-                }
-            });
-
-            // Toggle untuk konfirmasi password
-            const togglePasswordConfirmation = document.getElementById('togglePasswordConfirmation');
-            const passwordConfirmation = document.getElementById('password_confirmation');
-
-            togglePasswordConfirmation.addEventListener('click', function() {
-                const type = passwordConfirmation.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordConfirmation.setAttribute('type', type);
-
-                // Ganti icon
-                const icon = this.querySelector('i');
-                if (type === 'password') {
-                    icon.classList.remove('bi-eye-slash');
-                    icon.classList.add('bi-eye');
-                } else {
-                    icon.classList.remove('bi-eye');
-                    icon.classList.add('bi-eye-slash');
-                }
-            });
-        });
-    </script>
     <!-- Edit User Modal -->
     @if (isset($user))
         <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel"
@@ -352,8 +308,8 @@
                             <div class="mb-3">
                                 <label for="editPassword" class="form-label">Password Baru (opsional)</label>
                                 <div class="input-group">
-                                    <input type="password" name="password" class="form-control" id="password">
-                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <input type="password" name="password" class="form-control" id="editPasswordId">
+                                    <button class="btn btn-outline-secondary" type="button" id="editTogglePassword">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
@@ -367,9 +323,9 @@
                                 <div class="password-container">
                                     <div class="input-group">
                                         <input type="password" name="password_confirmation" class="form-control"
-                                            id="password_confirmation">
+                                            id="edit_password_confirmation">
                                         <button class="btn btn-outline-secondary" type="button"
-                                            id="togglePasswordConfirmation">
+                                            id="editTogglePasswordConfirmation">
                                             <i class="bi bi-eye"></i>
                                         </button>
                                     </div>
@@ -464,6 +420,79 @@
 
 @push('scripts')
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle untuk password
+            const togglePassword = document.getElementById('togglePassword');
+            const password = document.getElementById('password');
+
+            togglePassword.addEventListener('click', function() {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+
+                // Ganti icon
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                } else {
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                }
+            });
+
+            // Toggle untuk konfirmasi password
+            const togglePasswordConfirmation = document.getElementById('togglePasswordConfirmation');
+            const passwordConfirmation = document.getElementById('password_confirmation');
+
+            togglePasswordConfirmation.addEventListener('click', function() {
+                const type = passwordConfirmation.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordConfirmation.setAttribute('type', type);
+
+                // Ganti icon
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                } else {
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                }
+            });
+            const editTogglePassword = document.getElementById('editTogglePassword');
+            const editPasswordId = document.getElementById('editPasswordId');
+
+            editTogglePassword.addEventListener('click', function() {
+                const type = editPasswordId.getAttribute('type') === 'password' ? 'text' : 'password';
+                editPasswordId.setAttribute('type', type);
+
+                // Ganti icon
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                } else {
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                }
+            });
+            const editTogglePasswordConfirmation = document.getElementById('editTogglePasswordConfirmation');
+            const editPasswordConfirmation = document.getElementById('edit_password_confirmation');
+
+            editTogglePasswordConfirmation.addEventListener('click', function() {
+                const type = editPasswordConfirmation.getAttribute('type') === 'password' ? 'text' : 'password';
+                editPasswordConfirmation.setAttribute('type', type);
+
+                // Ganti icon
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                } else {
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                }
+            });
+        });
         @if (session('success') || session('error'))
             window.flash = {
                 message: {!! json_encode(session('success') ?? session('error')) !!},
@@ -988,7 +1017,7 @@
             }
 
 
-            setupPasswordToggle('toggleEditPassword', 'editPassword');
+            setupPasswordToggle('toggleEditPassword', 'editPasswordId');
             setupPasswordToggle('toggleEditPasswordConfirmation', 'editPasswordConfirmation');
         });
     </script>
