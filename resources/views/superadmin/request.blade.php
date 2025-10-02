@@ -30,8 +30,9 @@
                 </div>
             </form>
         </div>
-    </div>>
+    </div>
 
+    <!-- Stats Cards -->
     @if ($requests->count() > 0)
         <div class="row g-3 mb-4">
             <div class="col-md-4">
@@ -49,7 +50,6 @@
             </div>
         </div>
     @endif
-
 
     <!-- Table -->
     <div class="card shadow-sm">
@@ -151,9 +151,6 @@
                                 </tr>
                             </thead>
                             <tbody id="detail-request-body">
-                                <tr>
-                                    <td colspan="5" class="text-center">Memuat data...</td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -180,9 +177,29 @@
                                 </tr>
                             </thead>
                             <tbody id="detail-pengiriman-body">
-                                <tr>
-                                    <td colspan="7" class="text-center">Memuat data pengiriman...</td>
-                                </tr>
+                                <!-- Modal Konfirmasi Reject -->
+                                <div class="modal fade" id="modalReject" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title"><i class="bi bi-x-circle"></i> Tolak Permintaan</h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <label class="form-label">Alasan Penolakan:</label>
+                                                <textarea class="form-control" id="rejectReason" rows="3"
+                                                    placeholder="Masukkan alasan penolakan..."></textarea>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Batal</button>
+                                                <button type="button" class="btn btn-danger"
+                                                    id="btnConfirmReject">Tolak</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </tbody>
                         </table>
                     </div>
@@ -214,28 +231,17 @@
 @push('scripts')
     <script>
         window.allRequests = @json($requests->items());
-        // Filter pencarian (client-side)
-        document.getElementById('searchFilter')?.addEventListener('keyup', function() {
-            const filter = this.value.toLowerCase();
-            document.querySelectorAll('tbody tr').forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(filter) ? '' : 'none';
-            });
-        });
-
         // Buka modal detail
         document.querySelectorAll('.btn-detail').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const tiket = this.dataset.tiket;
                 const requester = this.dataset.requester;
                 const tanggal = this.dataset.tanggal;
 
-                // Reset modal info dasar
                 document.getElementById('modal-tiket-display').textContent = tiket;
                 document.getElementById('modal-requester-display').textContent = requester;
                 document.getElementById('modal-tanggal-display').textContent = tanggal;
 
-                // Set status badge
                 const statusBadge = document.getElementById('modal-status-display');
                 if ({{ Auth::id() }} === 15) {
                     statusBadge.textContent = 'Menunggu Approval Admin';
@@ -245,89 +251,69 @@
                     statusBadge.className = 'badge bg-info';
                 }
 
-                // Cari data request di allRequests
                 const req = allRequests.find(r => r.tiket === tiket);
-
-                // Isi detail request (items diminta)
                 const detailBody = document.getElementById('detail-request-body');
                 detailBody.innerHTML = '';
+
                 if (req && req.details && req.details.length > 0) {
                     req.details.forEach((item, index) => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${item.nama_item || '-'}</td>
-                    <td>${item.deskripsi || '-'}</td>
-                    <td>${item.jumlah || 0}</td>
-                    <td>${item.keterangan || '-'}</td>
-                `;
+                                                            <td>${index + 1}</td>
+                                                            <td>${item.nama_item || '-'}</td>
+                                                            <td>${item.deskripsi || '-'}</td>
+                                                            <td>${item.jumlah || 0}</td>
+                                                            <td>${item.keterangan || '-'}</td>
+                                                        `;
                         detailBody.appendChild(tr);
                     });
                 } else {
-                    detailBody.innerHTML =
-                        '<tr><td colspan="5" class="text-center">Tidak ada item diminta.</td></tr>';
+                    detailBody.innerHTML = '<tr><td colspan="5" class="text-center">Tidak ada item diminta.</td></tr>';
                 }
 
-                // Isi data pengiriman
                 const pengirimanBody = document.getElementById('detail-pengiriman-body');
                 pengirimanBody.innerHTML = '';
                 if (req && req.pengiriman && req.pengiriman.details && req.pengiriman.details.length > 0) {
                     req.pengiriman.details.forEach((item, index) => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${item.nama_item || item.nama || '-'}</td>
-                    <td>${item.merk || '-'}</td>
-                    <td>${item.sn || '-'}</td>
-                    <td>${item.tipe || '-'}</td>
-                    <td>${item.jumlah || 0}</td>
-                    <td>${item.keterangan || '-'}</td>
-                `;
+                                                            <td>${index + 1}</td>
+                                                            <td>${item.nama_item || item.nama || '-'}</td>
+                                                            <td>${item.merk || '-'}</td>
+                                                            <td>${item.sn || '-'}</td>
+                                                            <td>${item.tipe || '-'}</td>
+                                                            <td>${item.jumlah || 0}</td>
+                                                            <td>${item.keterangan || '-'}</td>
+                                                        `;
                         pengirimanBody.appendChild(tr);
                     });
-                    // Jika ada tanggal pengiriman, tampilkan juga
                     if (req.pengiriman.tanggal_transaksi) {
-                        const tanggal = new Date(req.pengiriman.tanggal_transaksi);
-                        const options = {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                        };
-                        const formattedTanggal = tanggal.toLocaleDateString('id-ID', options);
-
-                        document.getElementById('modal-tanggal-pengiriman-display').textContent =
-                            formattedTanggal;
-
+                        const formattedTanggal = new Date(req.pengiriman.tanggal_transaksi)
+                            .toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                        document.getElementById('modal-tanggal-pengiriman-display').textContent = formattedTanggal;
                     } else {
                         document.getElementById('modal-tanggal-pengiriman-display').textContent = '-';
                     }
                 } else {
-                    pengirimanBody.innerHTML =
-                        '<tr><td colspan="7" class="text-center">Belum ada data pengiriman.</td></tr>';
+                    pengirimanBody.innerHTML = '<tr><td colspan="7" class="text-center">Belum ada data pengiriman.</td></tr>';
                     document.getElementById('modal-tanggal-pengiriman-display').textContent = '-';
                 }
 
-                // Update data tiket untuk tombol approve/reject
                 document.querySelectorAll('.btn-approve-modal, .btn-reject-modal').forEach(btn => {
                     btn.dataset.tiket = tiket;
                 });
 
-                // Tampilkan modal
                 const modal = new bootstrap.Modal(document.getElementById('modalDetail'));
                 modal.show();
             });
         });
 
-
-
-
-        // Approve
-        document.addEventListener('click', function(e) {
+        // Approve dengan SweetAlert
+        document.addEventListener('click', function (e) {
             if (e.target.classList.contains('btn-approve-modal')) {
                 const tiket = e.target.dataset.tiket;
-
                 if (!tiket) {
-                    Swal.fire('Error', 'Tiket tidak ditemukan.', 'error')
+                    Swal.fire('Error', 'Tiket tidak ditemukan.', 'error');
                     return;
                 }
 
@@ -366,57 +352,60 @@
             }
         });
 
-        // Reject
-document.addEventListener('click', function (e) {
-            const btn = e.target.closest('.btn-reject-modal');
-            if (!btn) return;
 
-            const tiket = btn.dataset.tiket;
-            if (!tiket) {
-                Swal.fire('Error', 'Tiket tidak ditemukan.', 'error');
-                return;
-            }
+        // Fungsi Reject
+        function rejectRequest(tiket) {
+            const modalReject = new bootstrap.Modal(document.getElementById('modalReject'));
+            modalReject.show();
 
-            Swal.fire({
-                title: 'Tolak Permintaan',
-                input: 'textarea',
-                inputLabel: 'Alasan Penolakan',
-                inputPlaceholder: 'Tuliskan alasan penolakan di sini...',
-                showCancelButton: true,
-                confirmButtonText: 'Tolak',
-                cancelButtonText: 'Batal',
-                reverseButtons: true,
-                preConfirm: (reason) => {
-                    if (!reason) {
-                        Swal.showValidationMessage('Alasan tidak boleh kosong');
-                    }
-                    return reason;
+            // Reset alasan
+            document.getElementById('rejectReason').value = '';
+
+            // Handle klik "Tolak"
+            document.getElementById('btnConfirmReject').onclick = async function () {
+                const reason = document.getElementById('rejectReason').value.trim();
+                if (!reason) {
+                    Swal.fire('Peringatan', 'Alasan tidak boleh kosong.', 'warning');
+                    return;
                 }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const reason = result.value;
-                    fetch(`/superadmin/request/${tiket}/reject`, {
+
+                try {
+                    const res = await fetch(`/superadmin/request/${tiket}/reject`, {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({ catatan: reason })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire('Berhasil!', data.message, 'success').then(() => location.reload());
-                            } else {
-                                Swal.fire('Gagal!', data.message, 'error');
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Error:', err);
-                            Swal.fire('Error', 'Terjadi kesalahan teknis.', 'error');
-                        });
+                    });
+
+                    const data = await res.json();
+                    modalReject.hide();
+
+                    if (data.success) {
+                        Swal.fire('Berhasil!', data.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Gagal!', data.message, 'error');
+                    }
+                } catch (err) {
+                    modalReject.hide();
+                    Swal.fire('Error', 'Terjadi kesalahan teknis.', 'error');
                 }
-            });
-        })
+            };
+        }
+
+        // Event listener untuk tombol reject
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('btn-reject-modal')) {
+                const tiket = e.target.dataset.tiket;
+                if (tiket) {
+                    rejectRequest(tiket);
+                } else {
+                    Swal.fire('Error', 'Tiket tidak ditemukan.', 'error');
+                }
+            }
+        });
+
+
     </script>
 @endpush

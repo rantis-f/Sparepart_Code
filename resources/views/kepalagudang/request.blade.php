@@ -235,15 +235,7 @@
                             <i class="bi bi-plus"></i> Tambah Baris
                         </button>
 
-                        <!-- Card untuk Catatan -->
-                        <div class="card mt-3">
-                            <div class="card-header bg-light">
-                                <h6 class="card-title mb-0"><i class="bi bi-chat-text"></i> Catatan</h6>
-                            </div>
-                            <div class="card-body">
-                                <textarea class="form-control" name="catatan" rows="3" placeholder="Tambahkan catatan jika ada..."></textarea>
-                            </div>
-                        </div>
+
 
                         <!-- Layout Kanan-Kiri untuk Opsi Ekspedisi dan Upload File -->
                         <div class="row mt-3">
