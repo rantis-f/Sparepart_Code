@@ -64,14 +64,14 @@ class KepalaROController extends Controller
             ->whereHas('user', function ($q) use ($user) {
                 $q->where('region', $user->region);
             })
-            ->where('status_ro', 'on progres') // ✅ Ganti dari 'pending' ke 'on progres'
+            ->where('status_ro', 'on progres') 
             ->firstOrFail();
 
         // Update status
         $request->status_ro = 'approved';
         $request->approved_by_ro = Auth::id();
         $request->status = 'pending';
-        $request->status_gudang = 'on progres'; // next step
+        $request->status_gudang = 'on progres';
 
         $request->save();
 
@@ -96,7 +96,6 @@ class KepalaROController extends Controller
         $request->status_gudang = 'rejected';
         $request->status_admin = 'rejected';
         $request->status_super_admin = 'rejected';
-        $request->status_barang = 'rejected';
 
         $request->save();
 

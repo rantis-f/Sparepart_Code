@@ -121,20 +121,10 @@
     <!-- Pagination -->
     <div class="pagination-container d-flex justify-content-between align-items-center">
         <div class="text-muted">
-            Menampilkan 1 hingga 5 dari 25 entri
+            Menampilkan {{ $requests->firstItem() }} hingga {{ $requests->lastItem() }} dari {{ $requests->total() }} entri
         </div>
         <nav aria-label="Page navigation">
-            <ul class="pagination mb-0">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#">Sebelumnya</a>
-                </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">Selanjutnya</a>
-                </li>
-            </ul>
+            {{ $requests->links() }}
         </nav>
     </div>
 

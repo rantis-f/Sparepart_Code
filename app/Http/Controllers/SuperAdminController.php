@@ -88,50 +88,50 @@ class SuperAdminController extends Controller
     }
 
 public function requestIndex(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    // 🔹 Query untuk TOTAL (tanpa filter tanggal)
-    $totalQuery = Permintaan::query();
-    if ($user->id === 15) {
-        $totalQuery->where('status_ro', 'approved')
-            ->where('status_gudang', 'approved')
-            ->whereNotIn('status_admin', ['approved', 'rejected']);
-    } elseif ($user->id === 16) {
-        $totalQuery->where('status_admin', 'approved')
-            ->whereNotIn('status_super_admin', ['approved', 'rejected']);
-    }
-    $totalRequests = $totalQuery->count();
+        // 🔹 Query untuk TOTAL (tanpa filter tanggal)
+        $totalQuery = Permintaan::query();
+        if ($user->id === 15) {
+            $totalQuery->where('status_ro', 'approved')
+                ->where('status_gudang', 'approved')
+                ->whereNotIn('status_admin', ['approved', 'rejected']);
+        } elseif ($user->id === 16) {
+            $totalQuery->where('status_admin', 'approved')
+                ->whereNotIn('status_super_admin', ['approved', 'rejected']);
+        }
+        $totalRequests = $totalQuery->count();
 
-    // 🔹 Query untuk TABEL (dengan filter tanggal)
-    $tableQuery = Permintaan::with(['user', 'details', 'pengiriman.details']);
-    
-    // Filter tanggal hanya untuk tabel
-    if ($request->filled('start_date')) {
-        $tableQuery->whereDate('tanggal_permintaan', '>=', $request->input('start_date'));
-    }
-    if ($request->filled('end_date')) {
-        $tableQuery->whereDate('tanggal_permintaan', '<=', $request->input('end_date'));
-    }
+        // 🔹 Query untuk TABEL (dengan filter tanggal)
+        $tableQuery = Permintaan::with(['user', 'details', 'pengiriman.details']);
 
-    // Role-based untuk tabel
-    if ($user->id === 15) {
-        $requests = $tableQuery->where('status_ro', 'approved')
-            ->where('status_gudang', 'approved')
-            ->whereNotIn('status_admin', ['approved', 'rejected'])
-            ->orderBy('id', 'desc')
-            ->paginate(10);
-    } elseif ($user->id === 16) {
-        $requests = $tableQuery->where('status_admin', 'approved')
-            ->whereNotIn('status_super_admin', ['approved', 'rejected'])
-            ->orderBy('id', 'desc')
-            ->paginate(10);
-    } else {
-        $requests = new LengthAwarePaginator([], 0, 10);
-    }
+        // Filter tanggal hanya untuk tabel
+        if ($request->filled('start_date')) {
+            $tableQuery->whereDate('tanggal_perubahan', '>=', $request->input('start_date'));
+        }
+        if ($request->filled('end_date')) {
+            $tableQuery->whereDate('tanggal_perubahan', '<=', $request->input('end_date'));
+        }
 
-    return view('superadmin.request', compact('requests', 'totalRequests'));
-}
+        // Role-based untuk tabel
+        if ($user->id === 15) {
+            $requests = $tableQuery->where('status_ro', 'approved')
+                ->where('status_gudang', 'approved')
+                ->whereNotIn('status_admin', ['approved', 'rejected'])
+                ->orderBy('id', 'desc')
+                ->paginate(10);
+        } elseif ($user->id === 16) {
+            $requests = $tableQuery->where('status_admin', 'approved')
+                ->whereNotIn('status_super_admin', ['approved', 'rejected'])
+                ->orderBy('id', 'desc')
+                ->paginate(10);
+        } else {
+            $requests = new LengthAwarePaginator([], 0, 10);
+        }
+
+        return view('superadmin.request', compact('requests', 'totalRequests'));
+    }
 
     public function historyIndex(Request $request)
     {
@@ -375,6 +375,77 @@ if ($request->filled('date_from') && $request->filled('date_to')) {
                 $pengiriman->update([
                     'status' => 'rejected',
                 ]);
+
+
+            if ($pengiriman) {
+                $snList = $pengiriman->details->pluck('sn')->filter()->map(function ($sn) {
+                    return trim($sn);
+                })->toArray();
+
+                if (!empty($snList)) {
+                    $barangList = DetailBarang::whereIn('serial_number', $snList)->get();
+
+                    foreach ($pengiriman->details as $detail) {
+                        $sn = trim($detail->sn);
+                        $barang = $barangList->firstWhere('serial_number', $sn);
+
+                        if (!$barang) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "SN '$sn' tidak ditemukan di database."
+                            ], 400);
+                        }
+
+                        if ($barang->quantity <= 0) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "Stok habis untuk SN: $sn"
+                            ], 400);
+                        }
+                    }
+
+                    DetailBarang::whereIn('serial_number', $snList)
+                        ->decrement('quantity', 1);
+                }
+
+                foreach ($pengiriman->details as $detail) {
+                    $kategori = $detail->kategori;
+                    $jenis = $detail->nama;
+                    $tipe   = $detail->tipe;
+                    $jumlah   = $detail->jumlah;
+
+                    if ($kategori === 'non-aset') {
+                        $barang = \App\Models\DetailBarang::whereHas('jenis', function ($q) use ($jenis) {
+                            $q->where('nama', $jenis);
+                        })
+                            ->whereHas('tipe', function ($q) use ($tipe) {
+                                $q->where('nama', $tipe);
+                            })
+                            ->whereHas('listBarang', function ($q) {
+                                $q->where('kategori', 'non-aset');
+                            })
+                            ->orderBy('tanggal', 'asc')
+                            ->first();
+
+                        if (!$barang) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "Tidak ditemukan barang non-aset dengan jenis ID: $jenisId dan tipe ID: $tipeId"
+                            ], 400);
+                        }
+                        $namaJenis = optional($barang->jenisBarang)->nama;
+
+                        if ($barang->quantity < $jumlah) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "Stok tidak cukup untuk barang non-aset jenis: $namaJenis. Dibutuhkan: $jumlah, Tersedia: {$barang->quantity}"
+                            ], 400);
+                        }
+
+                        $barang->decrement('quantity', $jumlah);
+                    }
+                }
+            }
 
                 return response()->json([
                     'success' => true,

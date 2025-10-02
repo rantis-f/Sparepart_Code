@@ -151,7 +151,29 @@
                                 </tr>
                             </thead>
                             <tbody id="detail-request-body">
-                                <!-- Akan diisi otomatis oleh JS -->
+                                <!-- Modal Konfirmasi Reject -->
+                                <div class="modal fade" id="modalReject" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title"><i class="bi bi-x-circle"></i> Tolak Permintaan</h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <label class="form-label">Alasan Penolakan:</label>
+                                                <textarea class="form-control" id="rejectReason" rows="3"
+                                                    placeholder="Masukkan alasan penolakan..."></textarea>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Batal</button>
+                                                <button type="button" class="btn btn-danger"
+                                                    id="btnConfirmReject">Tolak</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </tbody>
                         </table>
                     </div>
@@ -168,8 +190,8 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Tanggal Pengiriman</label>
-                                <input type="date" class="form-control" name="tanggal_pengiriman"
-                                    id="tanggal_pengiriman" required>
+                                <input type="date" class="form-control" name="tanggal_pengiriman" id="tanggal_pengiriman"
+                                    required>
                             </div>
                         </div>
                         <div class="mt-3 table-responsive">
@@ -215,15 +237,14 @@
                                             </select>
                                         </td>
 
-                                        <td class="jumlah-col"><input type="number" class="form-control" value="1"
-                                                min="1" required></td>
+                                        <td class="jumlah-col"><input type="number" class="form-control" value="1" min="1"
+                                                required></td>
                                         <td class="keterangan-col">
                                             <input type="text" class="form-control" name="keterangan"
                                                 placeholder="Keterangan">
                                         </td>
                                         <td class="aksi-col">
-                                            <button type="button" class="btn btn-danger btn-sm"
-                                                onclick="hapusBaris(this)">
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="hapusBaris(this)">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -278,8 +299,8 @@
                                     <div class="card-body">
                                         <div class="mb-3">
                                             <label class="form-label fw-semibold">Upload File Pendukung</label>
-                                            <input type="file" class="form-control" name="files[]" id="fileUpload"
-                                                multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                            <input type="file" class="form-control" name="files[]" id="fileUpload" multiple
+                                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                                             <div class="form-text mt-2">
                                                 <small>Format: PDF, JPG, PNG, DOC, DOCX<br>Maksimal per file: 5MB</small>
                                             </div>
@@ -308,11 +329,12 @@
             </div>
         </div>
     </div>
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
 @endsection
 
 @push('scripts')
     <script>
-        (function() {
+        (function () {
             // -----------------------
             // Utility / Setup
             // -----------------------
@@ -342,6 +364,43 @@
                     selectEl.appendChild(opt);
                 }
                 return opt;
+            }
+
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                if (!container) return;
+
+                const id = 'toast-' + Date.now();
+                const bgClass = {
+                    success: 'bg-success text-white',
+                    danger: 'bg-danger text-white',
+                    warning: 'bg-warning text-dark',
+                    info: 'bg-info text-white'
+                }[type] || 'bg-secondary text-white';
+
+                const icon = {
+                    success: '<i class="bi bi-check-circle-fill me-2"></i>',
+                    danger: '<i class="bi bi-x-circle-fill me-2"></i>',
+                    warning: '<i class="bi bi-exclamation-triangle-fill me-2"></i>',
+                    info: '<i class="bi bi-info-circle-fill me-2"></i>'
+                }[type] || '';
+
+                const toastHtml = `
+            <div id="${id}" class="toast ${bgClass} shadow" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex align-items-center">
+                    <div class="toast-body">${icon}${message}</div>
+                    <button type="button" class="btn-close ${type === 'success' || type === 'info' ? 'btn-close-white' : ''} me-2 m-auto" 
+                            data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+                container.innerHTML += toastHtml;
+                const toast = new bootstrap.Toast(document.getElementById(id), {
+                    delay: type === 'danger' ? 5000 : 3000,
+                    autohide: true
+                });
+                toast.show();
             }
 
             // -----------------------
@@ -444,43 +503,43 @@
             function buildRow(idx, item = {}) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-      <td class="no-col">${idx + 1}</td>
-      <td class="kategori-col">
-        <select class="form-select kategori-select" name="items[${idx}][kategori]">
-          <option value="">Select</option>
-          <option value="aset">Aset</option>
-          <option value="non-aset">Non-Aset</option>
-        </select>
-      </td>
-      <td class="sn-col"><input type="text" class="form-control sn-input" name="items[${idx}][sn]" placeholder="Nomor Serial" disabled></td>
-      <td class="nama-col">
-        <select class="form-select nama-item-select" name="items[${idx}][nama_item]">
-          <option value="">Select</option>
-        </select>
-        <input type="hidden" class="jenis-id" name="items[${idx}][jenis_id]" value="">
-      </td>
-      <td class="tipe-col">
-        <select class="form-select tipe-select" name="items[${idx}][tipe]">
-          <option value="">Select</option>
-        </select>
-        <input type="hidden" class="tipe-id" name="items[${idx}][tipe_id]" value="">
-      </td>
-      <td class="merk-col">
-        <select class="form-select merk-select" name="items[${idx}][merk]">
-          <option value="">Select</option>
-        </select>
-        <input type="hidden" class="vendor-id" name="items[${idx}][vendor_id]" value="">
-      </td>
-      <td class="jumlah-col"><input type="number" class="form-control" name="items[${idx}][jumlah]" value="${item.jumlah || 1}" min="1" required></td>
-      <td class="keterangan-col">
-        <input type="text" class="form-control" name="items[${idx}][keterangan]" value="${item.keterangan || ''}" placeholder="Keterangan">
-      </td>
-      <td class="aksi-col">
-        <button type="button" class="btn btn-danger btn-sm" onclick="hapusBaris(this)">
-          <i class="bi bi-trash"></i>
-        </button>
-      </td>
-    `;
+                              <td class="no-col">${idx + 1}</td>
+                              <td class="kategori-col">
+                                <select class="form-select kategori-select" name="items[${idx}][kategori]">
+                                  <option value="">Select</option>
+                                  <option value="aset">Aset</option>
+                                  <option value="non-aset">Non-Aset</option>
+                                </select>
+                              </td>
+                              <td class="sn-col"><input type="text" class="form-control sn-input" name="items[${idx}][sn]" placeholder="Nomor Serial" disabled></td>
+                              <td class="nama-col">
+                                <select class="form-select nama-item-select" name="items[${idx}][nama_item]">
+                                  <option value="">Select</option>
+                                </select>
+                                <input type="hidden" class="jenis-id" name="items[${idx}][jenis_id]" value="">
+                              </td>
+                              <td class="tipe-col">
+                                <select class="form-select tipe-select" name="items[${idx}][tipe]">
+                                  <option value="">Select</option>
+                                </select>
+                                <input type="hidden" class="tipe-id" name="items[${idx}][tipe_id]" value="">
+                              </td>
+                              <td class="merk-col">
+                                <select class="form-select merk-select" name="items[${idx}][merk]">
+                                  <option value="">Select</option>
+                                </select>
+                                <input type="hidden" class="vendor-id" name="items[${idx}][vendor_id]" value="">
+                              </td>
+                              <td class="jumlah-col"><input type="number" class="form-control" name="items[${idx}][jumlah]" value="${item.jumlah || 1}" min="1" required></td>
+                              <td class="keterangan-col">
+                                <input type="text" class="form-control" name="items[${idx}][keterangan]" value="${item.keterangan || ''}" placeholder="Keterangan">
+                              </td>
+                              <td class="aksi-col">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="hapusBaris(this)">
+                                  <i class="bi bi-trash"></i>
+                                </button>
+                              </td>
+                            `;
                 return tr;
             }
 
@@ -674,7 +733,7 @@
             // -----------------------
             // Buttons / Modal handling
             // -----------------------
-            window.hapusBaris = function(button) {
+            window.hapusBaris = function (button) {
                 const tr = button.closest('tr');
                 const tbody = tr.parentElement;
                 if (tbody.children.length > 1) {
@@ -694,7 +753,7 @@
                 }
             };
 
-            window.tambahBaris = function() {
+            window.tambahBaris = function () {
                 const tbody = document.querySelector('#tabelBarang tbody');
                 const nomorBaru = tbody.children.length + 1;
                 const tr = buildRow(nomorBaru - 1, {});
@@ -724,7 +783,7 @@
             const allRequests = @json($requests);
 
             document.querySelectorAll('.btn-terima').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function () {
                     const tiket = this.dataset.tiket;
                     const requester = this.dataset.requester;
                     const tanggal = this.dataset.tanggal;
@@ -744,12 +803,12 @@
                         req.details.forEach((item, index) => {
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${item.nama_item ?? item.nama ?? '-'}</td>
-            <td>${item.deskripsi ?? '-'}</td>
-            <td>${item.jumlah ?? '-'}</td>
-            <td>${item.keterangan ?? '-'}</td>
-          `;
+                                    <td>${index + 1}</td>
+                                    <td>${item.nama_item ?? item.nama ?? '-'}</td>
+                                    <td>${item.deskripsi ?? '-'}</td>
+                                    <td>${item.jumlah ?? '-'}</td>
+                                    <td>${item.keterangan ?? '-'}</td>
+                                  `;
                             detailBody.appendChild(tr);
                         });
                     } else {
@@ -798,20 +857,20 @@
             async function approveRequest() {
                 const tiket = document.getElementById('tiketInput').value;
                 if (!tiket) {
-                    alert('Tiket tidak ditemukan.');
+                    Swal.fire('Error', 'Tiket tidak ditemukan.', 'error');
                     return;
                 }
 
                 const csrfToken = getCsrfToken();
                 if (!csrfToken) {
-                    alert('CSRF token tidak ditemukan.');
+                    Swal.fire('Error', 'CSRF token tidak ditemukan.', 'error');
                     return;
                 }
 
                 // tanggal
                 const tanggalInput = document.getElementById('tanggal_pengiriman');
                 if (!tanggalInput || !tanggalInput.value) {
-                    alert('Tanggal Pengiriman wajib diisi.');
+                    Swal.fire('Peringatan', 'Tanggal Pengiriman wajib diisi.', 'warning');
                     return;
                 }
                 const tanggalPengiriman = tanggalInput.value;
@@ -834,7 +893,8 @@
                         continue;
                     }
                     if (kategori === 'aset' && (!sn || sn === '')) {
-                        alert(`Serial Number wajib diisi untuk barang Aset di baris ${row.rowIndex}.`);
+                        const rowIndex = Array.from(document.querySelectorAll('#tabelBarang tbody tr')).indexOf(row) + 1;
+                        Swal.fire('Peringatan', `Serial Number wajib diisi untuk barang Aset di baris ${rowIndex}.`, 'warning');
                         return;
                     }
 
@@ -853,7 +913,7 @@
                 }
 
                 if (!valid || items.length === 0) {
-                    alert('Isi minimal satu barang dengan lengkap.');
+                    Swal.fire('Peringatan', 'Isi minimal satu barang dengan lengkap.', 'warning');
                     return;
                 }
 
@@ -898,7 +958,7 @@
                         try {
                             const json = JSON.parse(txt);
                             console.error('Server JSON error:', json);
-                            alert('Gagal: ' + (json.message || txt));
+                            Swal.fire('Gagal', json.message || 'Terjadi kesalahan server.', 'error');
                         } catch (e) {
                             alert('Server error ' + response.status);
                         }
@@ -907,7 +967,9 @@
 
                     const data = await response.json();
                     if (data.success) {
-                        alert(data.message || 'Berhasil.');
+                        Swal.fire('Berhasil', data.message || 'Permintaan berhasil dikirim!', 'success').then(() => {
+                            location.reload();
+                        });
                         location.reload();
                     } else {
                         alert('Gagal: ' + (data.message || 'Terjadi kesalahan.'));
@@ -915,55 +977,67 @@
 
                 } catch (err) {
                     console.error('Approve request error:', err);
-                    alert('Terjadi kesalahan teknis. Silakan coba lagi atau refresh halaman.');
+                    Swal.fire('Error', 'Terjadi kesalahan teknis. Silakan coba lagi.', 'error');
                 }
             }
             window.approveRequest = approveRequest;
 
             function rejectRequest() {
-                const tiket = document.getElementById('tiketInput').value;
-                if (!tiket) return;
+                const modalReject = new bootstrap.Modal(document.getElementById('modalReject'));
+                modalReject.show();
 
-                const catatan = prompt('Masukkan alasan penolakan (opsional):', '');
-                const csrfToken = getCsrfToken();
-                if (!csrfToken) {
-                    alert('CSRF token tidak ditemukan. Silakan refresh halaman.');
-                    return;
-                }
+                // Reset alasan
+                document.getElementById('rejectReason').value = '';
 
-                fetch(`/kepalagudang/request/${tiket}/reject`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            tiket,
-                            catatan
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
+                // Handle klik "Tolak"
+                document.getElementById('btnConfirmReject').onclick = async function () {
+                    const reason = document.getElementById('rejectReason').value.trim();
+                    const tiket = document.getElementById('tiketInput').value;
+                    const csrfToken = getCsrfToken();
+
+                    if (!tiket || !csrfToken) {
+                        showToast('Data tidak lengkap.', 'danger');
+                        return;
+                    }
+
+                    if (!reason) {
+                        showToast('Alasan tidak boleh kosong.', 'warning');
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`/kepalagudang/request/${tiket}/reject`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ catatan: reason })
+                        });
+
+                        const data = await res.json();
+                        modalReject.hide();
+
                         if (data.success) {
-                            alert(data.message);
+                            showToast(data.message, 'success');
                             const modal = bootstrap.Modal.getInstance(document.getElementById('modalTerima'));
                             modal.hide();
-                            location.reload();
+                            setTimeout(() => location.reload(), 1000);
                         } else {
-                            alert('Gagal: ' + data.message);
+                            showToast('Gagal: ' + data.message, 'danger');
                         }
-                    })
-                    .catch(err => {
-                        console.error('Error:', err);
-                        alert('Terjadi kesalahan teknis.');
-                    });
+                    } catch (err) {
+                        modalReject.hide();
+                        showToast('Terjadi kesalahan teknis.', 'danger');
+                    }
+                };
             }
             window.rejectRequest = rejectRequest;
 
             // -----------------------
             // Event delegation: selects, SN inputs
             // -----------------------
-            document.addEventListener('change', function(e) {
+            document.addEventListener('change', function (e) {
                 const el = e.target;
 
                 if (el.matches('.kategori-select')) {
@@ -1021,7 +1095,7 @@
             });
 
             // SN input handlers (focusout & Enter)
-            document.addEventListener('focusout', function(e) {
+            document.addEventListener('focusout', function (e) {
                 const el = e.target;
                 if (el.matches('#tabelBarang .sn-col input')) {
                     if (el.disabled) return;
@@ -1029,7 +1103,7 @@
                 }
             }, true);
 
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 const el = e.target;
                 if (e.key === 'Enter' && el.matches('#tabelBarang .sn-col input')) {
                     e.preventDefault();
@@ -1121,7 +1195,7 @@
             }
 
             // Initial state for static rows (on page load)
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('#tabelBarang tbody tr').forEach((tr, idx) => {
                     const kategori = tr.querySelector('.kategori-select')?.value;
                     const snInput = tr.querySelector('.sn-col input');
