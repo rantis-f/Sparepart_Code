@@ -52,8 +52,8 @@ function showStatusDetailModal(tiket, userRole) {
 
             // Daftar role yang ditampilkan
             const roles = [
-                { key: 'ro', label: 'Kepala RO' },
-                { key: 'gudang', label: 'Kepala Gudang' },
+                { key: 'ro', label: 'Regional Office Head' },
+                { key: 'gudang', label: 'Warehouse Head' },
                 { key: 'admin', label: 'Leader Infarstructure Maintenance' },
                 { key: 'super_admin', label: 'Head of Departement NR' }
             ];

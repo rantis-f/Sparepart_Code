@@ -322,16 +322,6 @@
                             <div class="info-value">{{ $user->atasan ?? '-' }}</div>
                         </div>
                     </div>
-
-                    <div class="info-item">
-                        <div class="info-icon">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <div class="info-content">
-                            <div class="info-label">Bergabung Pada</div>
-                            <div class="info-value">01 Januari 2023</div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="text-center">

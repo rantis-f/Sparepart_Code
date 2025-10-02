@@ -45,9 +45,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                    @forelse ($requests as $req)
+                    @forelse ($requests as $index => $req)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">#{{ $req->id }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">#{{ $index + 1}}</td>
                             <td class="px-6 py-4 text-sm">{{ $req->user?->name ?? 'Tidak Diketahui' }}</td>
                             <td class="px-6 py-4 text-sm">{{ \Carbon\Carbon::parse($req->tanggal_permintaan)->format('d M Y') }}</td>
                             <td class="px-6 py-4 text-sm space-x-3">

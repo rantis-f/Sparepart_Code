@@ -1,13 +1,13 @@
 @extends('layouts.user')
 
-@section('title', 'History Barang')
+@section('title', 'History Sparepart')
 
 @section('content')
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="page-title mb-1"><i class="bi bi-clock-history me-2"></i> History Barang</h4>
-            <p class="text-muted mb-0">Riwayat permintaan dan penerimaan barang Anda.</p>
+            <h4 class="page-title mb-1"><i class="bi bi-clock-history me-2"></i> History Sparepart</h4>
+            <p class="text-muted mb-0">Riwayat permintaan dan penerimaan sparepart Anda.</p>
         </div>
         <div class="badge bg-primary fs-6 p-2">
             <i class="bi bi-list-check me-1"></i> Total: {{ $requests->count() }} Request
@@ -147,7 +147,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title"><i class="bi bi-clock-history"></i> Detail History Barang</h5>
+                    <h5 class="modal-title"><i class="bi bi-clock-history"></i> Detail History Sparepart</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 

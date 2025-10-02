@@ -24,7 +24,7 @@
                     <option value="">Semua Status</option>
                     <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
                     <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                    <option value="diproses" {{ request('status') == 'diproses' ? 'selected' : '' }}>On Progress</option>
+                    <option value="on progres" {{ request('status') == 'on progres' ? 'selected' : '' }}>On Progress</option>
                 </select>
             </div>
         </div>
@@ -40,11 +40,11 @@
 </div>
 
     <!-- Export Button -->
-    <div class="d-flex justify-content-end mb-3">
+    {{-- <div class="d-flex justify-content-end mb-3">
         <button class="btn btn-export">
             <i class="bi bi-download me-1"></i> Export Data
         </button>
-    </div>
+    </div> --}}
 
     <!-- Table -->
     <div class="table-container mb-4">
@@ -118,13 +118,14 @@
         </div>
     </div>
 
-    <!-- Pagination -->
+ <!-- Pagination -->
     <div class="pagination-container d-flex justify-content-between align-items-center">
         <div class="text-muted">
-            Menampilkan {{ $requests->firstItem() }} hingga {{ $requests->lastItem() }} dari {{ $requests->total() }} entri
+            Menampilkan {{ $requests->firstItem() ?? 0 }} hingga {{ $requests->lastItem() ?? 0 }} dari
+            {{ $requests->total() }} entri
         </div>
         <nav aria-label="Page navigation">
-            {{ $requests->links() }}
+            {{ $requests->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
         </nav>
     </div>
 

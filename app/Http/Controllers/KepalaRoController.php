@@ -25,7 +25,6 @@ class KepalaROController extends Controller
         return view('kepalaro.dashboard', compact('requests'));
     }
 
-    // History: Semua permintaan (disetujui/ditolak)
     public function history(Request $request)
     {
         $user = Auth::user();
@@ -37,8 +36,10 @@ class KepalaROController extends Controller
             ->orderBy('id', 'desc');
 
         // Filter 
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+        if ($request->status === 'approved') {
+            $query->where('status_ro', 'approved');
+        } elseif ($request->status === 'ditolak') {
+            $query->where('status_ro', 'rejected');
         }
 
         // Filter tanggal (created_at atau tanggal_permintaan)
@@ -64,7 +65,7 @@ class KepalaROController extends Controller
             ->whereHas('user', function ($q) use ($user) {
                 $q->where('region', $user->region);
             })
-            ->where('status_ro', 'on progres') 
+            ->where('status_ro', 'on progres')
             ->firstOrFail();
 
         // Update status
@@ -77,7 +78,7 @@ class KepalaROController extends Controller
 
         return redirect()->back()->with('success', 'Permintaan disetujui dan diteruskan ke Warehouse Head!');
     }
-    
+
     public function reject($id)
     {
         $user = Auth::user();

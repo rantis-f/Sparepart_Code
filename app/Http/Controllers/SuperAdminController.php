@@ -11,6 +11,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\DetailBarang;
+use Laravel\Pail\ValueObjects\Origin\Console;
 
 class SuperAdminController extends Controller
 {
@@ -134,42 +135,66 @@ public function requestIndex(Request $request)
     }
 
     public function historyIndex(Request $request)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        $query = Permintaan::with(['user', 'details', 'pengiriman.details'])
-            ->where(function ($q) use ($user) {
-                // Untuk Admin (ID 15): tampilkan yang dia approve/reject
-                if ($user->id === 15) {
-                    $q->where('status_admin', 'approved')
-                        ->orWhere('status_admin', 'rejected');
+    $query = Permintaan::with(['user', 'details', 'pengiriman.details'])
+        ->where(function ($q) use ($user, $request) {
+            $status = $request->status;
+
+            if ($user->id === 15) { // Admin
+                if ($status) {
+                    if ($status === 'disetujui') {
+                        $q->where('status_admin', 'approved');
+                    } elseif ($status === 'ditolak') {
+                        $q->where('status_admin', 'rejected');
+                    } elseif ($status === 'on progres') {
+                        $q->where('status_admin', 'on progres');
+                    }
+                } else {
+                    $q->where(function ($q2) {
+                        $q2->where('status_admin', 'approved')
+                           ->orWhere('status_admin', 'rejected');
+                    });
                 }
-                // Untuk Super Admin (ID 16): tampilkan yang dia approve/reject
-                elseif ($user->id === 16) {
-                    $q->where('status_super_admin', 'approved')
-                        ->orWhere('status_super_admin', 'rejected');
+            } elseif ($user->id === 16) { // Superadmin
+                if ($status) {
+                    if ($status === 'disetujui') {
+                        $q->where('status_super_admin', 'approved');
+                    } elseif ($status === 'ditolak') {
+                        $q->where('status_super_admin', 'rejected');
+                    } elseif ($status === 'on progres') {
+                        $q->where('status_super_admin', 'on progres');
+                    }
+                } else {
+                    $q->where(function ($q2) {
+                        $q2->where('status_super_admin', 'approved')
+                           ->orWhere('status_super_admin', 'rejected');
+                    });
                 }
-            })
-            ->orWhereHas('pengiriman') // atau sudah dikirim
-            ->orderBy('id', 'desc');
-            
+            }
 
-        // 🔹 Filter berdasarkan tanggal
-if ($request->filled('date_from') && $request->filled('date_to')) {
-    $dateFrom = Carbon::parse($request->date_from)->startOfDay(); 
-    $dateTo = Carbon::parse($request->date_to)->endOfDay();       
+        })
+        ->orderBy('id', 'desc');
 
-    $query->whereBetween('tanggal_perubahan', [$dateFrom, $dateTo]);
+    // Filter tanggal
+    if ($request->filled('date_from') && $request->filled('date_to')) {
+        $dateFrom = Carbon::parse($request->date_from)->startOfDay();
+        $dateTo = Carbon::parse($request->date_to)->endOfDay();
+
+        $query->whereBetween('tanggal_perubahan', [$dateFrom, $dateTo]);
+    }
+
+    $requests = $query->distinct()->paginate(10)->withQueryString();
+
+    return view('superadmin.history', compact('requests'));
 }
 
-        $requests = $query->distinct()->paginate(10)->withQueryString();
 
-        return view('superadmin.history', compact('requests'));
-    }
     /**
      * Approve oleh Admin (Mbak Inong) atau Super Admin (Mas Septian)
      */
-    public function approveRequest(Request $request)
+public function approveRequest(Request $request)
     {
         $tiket = $request->tiket;
         $user = Auth::user();
@@ -177,14 +202,16 @@ if ($request->filled('date_from') && $request->filled('date_to')) {
         // 🔹 ADMIN (Mbak Inong) - ID 15
         if ($user->id === 15) {
             $permintaan = Permintaan::where('tiket', $tiket)->firstOrFail();
+            $pengiriman = Pengiriman::where('tiket_permintaan', $tiket)->first();
 
             if ($permintaan->status_ro !== 'approved' || $permintaan->status_gudang !== 'approved') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Permintaan belum disetujui oleh RO/Gudang.'
+                    'message' => 'Permintaan belum disetujui oleh RO/Warehouse Head!'
                 ], 400);
             }
 
+            // ✅ Set status admin + next step: Super Admin → on progres
             $permintaan->update([
                 'status_admin' => 'approved',
                 'status_super_admin' => 'on progres',
@@ -194,7 +221,7 @@ if ($request->filled('date_from') && $request->filled('date_to')) {
 
             return response()->json([
                 'success' => true,
-                'message' => 'Permintaan disetujui oleh Admin (Mbak Inong). Telah dikirim ke Super Admin.'
+                'message' => 'Permintaan telah diteruskan ke Departement Head Network Reliability!'
             ]);
         }
 
@@ -205,99 +232,117 @@ if ($request->filled('date_from') && $request->filled('date_to')) {
             if ($permintaan->status_admin !== 'approved') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Permintaan belum disetujui oleh Admin.'
+                    'message' => 'Permintaan belum disetujui oleh Lead Infrastrukture Maintenance! '
                 ], 400);
             }
 
+            // ✅ Final approve → close semua status
             $permintaan->update([
                 'status_super_admin' => 'approved',
                 'approved_by_super_admin' => $user->id,
                 'catatan_super_admin' => $request->catatan ?? null,
+                'status_barang' => 'on_delivery',
             ]);
 
             $pengiriman = $permintaan->pengiriman;
-            $pengiriman->update([
-                'status' => 'on_delivery',
-            ]);
 
-            if ($pengiriman) {
-                $snList = $pengiriman->details->pluck('sn')->filter()->map(function ($sn) {
-                    return trim($sn);
-                })->toArray();
+if ($pengiriman) {
+    // Pisahkan list SN dari barang yang kategori aset (bukan non-aset)
+    $snList = $pengiriman->details
+        ->filter(function($detail) {
+            return $detail->kategori !== 'non-aset' && !empty(trim($detail->sn));
+        })
+        ->pluck('sn')
+        ->map(function ($sn) {
+            return trim($sn);
+        })
+        ->toArray();
 
-                if (!empty($snList)) {
-                    $barangList = \App\Models\DetailBarang::whereIn('serial_number', $snList)->get();
+    if (!empty($snList)) {
+        $barangList = \App\Models\DetailBarang::whereIn('serial_number', $snList)->get();
 
-                    foreach ($pengiriman->details as $detail) {
-                        $sn = trim($detail->sn);
-                        $barang = $barangList->firstWhere('serial_number', $sn);
+        foreach ($pengiriman->details as $detail) {
+            $kategori = $detail->kategori;
+            $sn = trim($detail->sn);
 
-                        if (!$barang) {
-                            return response()->json([
-                                'success' => false,
-                                'message' => "SN '$sn' tidak ditemukan di database."
-                            ], 400);
-                        }
-
-                        if ($barang->quantity <= 0) {
-                            return response()->json([
-                                'success' => false,
-                                'message' => "Stok habis untuk SN: $sn"
-                            ], 400);
-                        }
-                    }
-
-                    DetailBarang::whereIn('serial_number', $snList)
-                        ->decrement('quantity', 1);
+            if ($kategori !== 'non-aset') {
+                // Cek SN wajib ada untuk barang aset
+                if (empty($sn)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "SN wajib diisi untuk barang aset: {$detail->nama}"
+                    ], 400);
                 }
 
-                // 🔽 TAMBAHAN: Kurangi stok untuk barang non-aset (tanpa SN)
-                foreach ($pengiriman->details as $detail) {
-                    $kategori = $detail->kategori;
-                    $jenis = $detail->nama;
-                    $tipe   = $detail->tipe;
-                    $jumlah   = $detail->jumlah;
+                // Cari barang berdasar SN
+                $barang = $barangList->firstWhere('serial_number', $sn);
 
-                    if ($kategori === 'non-aset') {
-                        // Cari stok barang di DetailBarang yang sesuai
-                        $barang = \App\Models\DetailBarang::whereHas('jenis', function ($q) use ($jenis) {
-                            $q->where('nama', $jenis);
-                        })
-                            ->whereHas('tipe', function ($q) use ($tipe) {
-                                $q->where('nama', $tipe);
-                            })
-                            ->whereHas('listBarang', function ($q) {
-                                $q->where('kategori', 'non-aset');
-                            })
-                            ->orderBy('tanggal', 'asc')
-                            ->first();
+                if (!$barang) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "SN '$sn' tidak ditemukan di database."
+                    ], 400);
+                }
 
-                        if (!$barang) {
-                            return response()->json([
-                                'success' => false,
-                                'message' => "Tidak ditemukan barang non-aset dengan jenis ID: $jenisId dan tipe ID: $tipeId"
-                            ], 400);
-                        }
-
-                        // Ambil nama jenis barang dari relasi DetailBarang -> JenisBarang
-                        $namaJenis = optional($barang->jenisBarang)->nama;
-
-                        if ($barang->quantity < $jumlah) {
-                            return response()->json([
-                                'success' => false,
-                                'message' => "Stok tidak cukup untuk barang non-aset jenis: $namaJenis. Dibutuhkan: $jumlah, Tersedia: {$barang->quantity}"
-                            ], 400);
-                        }
-
-                        // Kurangi stok
-                        $barang->decrement('quantity', $jumlah);
-                    }
+                if ($barang->quantity <= 0) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Stok habis untuk SN: $sn"
+                    ], 400);
                 }
             }
+        }
+
+        \App\Models\DetailBarang::whereIn('serial_number', $snList)
+            ->decrement('quantity', 1);
+    }
+
+    // Kurangi stok untuk barang non-aset (tanpa SN)
+    foreach ($pengiriman->details as $detail) {
+        $kategori = $detail->kategori;
+        $jenis = $detail->nama;
+        $tipe   = $detail->tipe;
+        $jumlah   = $detail->jumlah;
+
+        if ($kategori === 'non-aset') {
+            // Cari stok barang di DetailBarang yang sesuai
+            $barang = \App\Models\DetailBarang::whereHas('jenis', function ($q) use ($jenis) {
+                $q->where('nama', $jenis);
+            })
+                ->whereHas('tipe', function ($q) use ($tipe) {
+                    $q->where('nama', $tipe);
+                })
+                ->whereHas('listBarang', function ($q) {
+                    $q->where('kategori', 'non-aset');
+                })
+                ->orderBy('tanggal', 'asc')
+                ->first();
+
+            if (!$barang) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Tidak ditemukan barang non-aset dengan jenis: $jenis dan tipe: $tipe"
+                ], 400);
+            }
+
+            $namaJenis = optional($barang->jenisBarang)->nama;
+
+            if ($barang->quantity < $jumlah) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Stok tidak cukup untuk barang non-aset jenis: $namaJenis. Dibutuhkan: $jumlah, Tersedia: {$barang->quantity}"
+                ], 400);
+            }
+
+            // Kurangi stok
+            $barang->decrement('quantity', $jumlah);
+        }
+    }
+}
 
             return response()->json([
                 'success' => true,
-                'message' => 'Permintaan disetujui final oleh Super Admin (Mas Septian). Barang siap dikirim.'
+                'message' => 'Barang siap dikirim!'
             ]);
         }
     }
@@ -350,7 +395,7 @@ if ($request->filled('date_from') && $request->filled('date_to')) {
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Permintaan ditolak oleh Admin.'
+                    'message' => 'Permintaan ditolak oleh Admin!'
                 ]);
             }
 

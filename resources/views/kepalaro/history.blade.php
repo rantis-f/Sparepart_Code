@@ -1,6 +1,6 @@
 @extends('layouts.kepalaro')
 
-@section('title', 'Histori Permintaan')
+@section('title', 'History Request')
 
 @section('content')
 <div x-data="{
@@ -13,7 +13,7 @@
     }
 }">
     <div class="py-8 px-6">
-        <h2 class="text-2xl font-semibold mb-6 text-gray-800">Histori Permintaan</h2>
+        <h2 class="text-2xl font-semibold mb-6 text-gray-800">History Request</h2>
 
         <!-- Filter Form -->
         <form method="GET" action="{{ route('kepalaro.history') }}" class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg">
@@ -64,9 +64,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                    @forelse ($requests as $req)
+                    @forelse ($requests as $index => $req)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">#{{ $req->id }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">#{{ $index + 1 }}</td>
                             <td class="px-6 py-4 text-sm">{{ $req->user?->name ?? 'Tidak Diketahui' }}</td>
                             <td class="px-6 py-4 text-sm">{{ \Carbon\Carbon::parse($req->tanggal_permintaan)->format('d M Y') }}</td>
                             

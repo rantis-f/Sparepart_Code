@@ -52,11 +52,12 @@
     </form>
 </div>
 
-    <div class="d-flex justify-content-end mb-3">
+{{-- button export --}}
+    {{-- <div class="d-flex justify-content-end mb-3">
         <button class="btn btn-export">
             <i class="bi bi-download me-1"></i> Export Data
         </button>
-    </div>
+    </div> --}}
 
     <div class="table-container">
         <div class="table-responsive">
@@ -125,25 +126,17 @@
         </div>
     </div>
 
-    <div class="pagination-container d-flex justify-content-between align-items-center">
+    <!-- Pagination -->
+    <div class="pagination-container d-flex justify-content-between align-items-center mt-4">
         <div class="text-muted">
-            Menampilkan 1 hingga 5 dari 25 entri
+            Menampilkan {{ $requests->firstItem() ?? 0 }}
+            hingga {{ $requests->lastItem() ?? 0 }}
+            dari {{ $requests->total() }} entri
         </div>
         <nav aria-label="Page navigation">
-            <ul class="pagination mb-0">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Sebelumnya</a>
-                </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">Selanjutnya</a>
-                </li>
-            </ul>
+            {{ $requests->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
         </nav>
     </div>
-
     <!-- ✅ Modal History (Bootstrap) -->
     <div class="modal fade" id="modalHistory" tabindex="-1">
         <div class="modal-dialog modal-xl">

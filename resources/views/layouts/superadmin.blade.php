@@ -475,8 +475,8 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header p-3">
-            <h4 class="text-white text-sm whitespace-nowrap"><i class="bi bi-gear-fill"></i> <span>Network
-                    Reliability</span></h4>
+            <h5 class="text-white text-xl text-sm whitespace-nowrap"><i class="bi bi-gear-fill"></i> <span>Network
+                    Reliability</span></h5>
         </div>
         <div class="list-group list-group-flush flex-grow-1">
             <a href="{{ route('superadmin.dashboard') }}" class="list-group-item list-group-item-action">

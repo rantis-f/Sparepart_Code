@@ -124,7 +124,7 @@
                             <input type="checkbox" name="remember" class="rounded border-gray-300 text-[#002060] focus:ring-[#00A0E3]">
                             <span class="ml-2 text-sm text-gray-600">Ingat saya</span>
                         </label>
-                        <a href="#" class="text-sm text-[#002060] hover:text-[#001440] font-medium">Lupa password?</a>
+                        {{-- <a href="#" class="text-sm text-[#002060] hover:text-[#001440] font-medium">Lupa password?</a> --}}
                     </div>
                 </div>
 

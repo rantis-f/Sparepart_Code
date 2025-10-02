@@ -1,13 +1,13 @@
 @extends('layouts.user')
 
-@section('title', 'Validasi Penerimaan Barang')
+@section('title', 'Validasi Penerimaan sparepart')
 
 @section('content')
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="page-title mb-1"><i class="bi bi-cart-check me-2"></i> Validasi Penerimaan Barang</h4>
-            <p class="text-muted mb-0">Konfirmasi penerimaan barang yang sudah dikirim ke Anda.</p>
+            <h4 class="page-title mb-1"><i class="bi bi-cart-check me-2"></i> Validasi Penerimaan sparepart</h4>
+            <p class="text-muted mb-0">Konfirmasi penerimaan sparepart yang sudah dikirim ke Anda.</p>
         </div>
         <div class="badge bg-primary fs-6 p-2">
             <i class="bi bi-list-check me-1"></i> Total: {{ $requests->count() }} Request
@@ -66,7 +66,7 @@
                             <tr>
                                 <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500">
                                     <i class="fas fa-inbox fa-3x text-gray-400 block mb-3"></i>
-                                    <p>Belum ada barang yang menunggu konfirmasi.</p>
+                                    <p>Belum ada sparepart yang menunggu konfirmasi.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -76,20 +76,6 @@
         </div>
     </div>
 
-    <!-- Pagination -->
-    <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1">Previous</a>
-            </li>
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-                <a class="page-link" href="#">Next</a>
-            </li>
-        </ul>
-    </nav>
 
     <!-- Modal Terima Barang -->
     <div class="modal fade" id="modalTerima" tabindex="-1">
